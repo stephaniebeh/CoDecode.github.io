@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #ffffff;
+      }
+
+      #top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        background-color: white;
+        z-index: 5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+        box-sizing: border-box;
+      }
+
+      #left-buttons {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+      }
+
+      #right-buttons {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #view-log, #slit-scanner-btn, #magic-lens-btn, #home-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        background-color: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 10;
+        flex-shrink: 0;
+      }
+
+      #view-log:hover, #slit-scanner-btn:hover, #magic-lens-btn:hover, #home-btn:hover {
+        background-color: #1e87db;
+      }
+
+      #right-buttons:has(#slit-scanner-btn[style*="display: none"]) #magic-lens-btn {
+        margin: 0 auto;
+      }
+
+      #qr-reader {
+        width: 100vw;
+        max-width: 100%;
+        height: auto;
+        max-height: calc(100vh - 50px);
+        margin: 0 auto;
+        box-sizing: border-box;
+      }
+
+      #qr-result {
+        display: none;
+        width: 90%;
+        max-width: 600px;
+        padding: 10px;
+        text-align: center;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        word-break: break-all;
+        z-index: 10;
+        position: absolute;
+        bottom: 210px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #000000;
+      }
+
+      #qr-result a {
+        color: #0066cc;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      #qr-result a:hover {
+        color: #003366;
+      }
+
+      #qr-log {
+        display: none;
+        width: 90%;
+        max-width: 600px;
+        padding: 20px;
+        background-color: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        z-index: 20;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+      }
+
+      #qr-log h2 {
+        margin: 0 0 10px;
+        font-size: 18px;
+        text-align: center;
+      }
+
+      #qr-log ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 10px;
+        flex-grow: 1;
+      }
+
+      #qr-log li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        margin-bottom: 5px;
+        background-color: #f9f9f9;
+        border-radius: 3px;
+        word-break: break-all;
+        font-size: 14px;
+      }
+
+      .log-text {
+        flex-grow: 1;
+        margin-right: 10px;
+      }
+
+      .log-text a {
+        color: #0066cc;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .log-text a:hover {
+        color: #003366;
+      }
+
+      .reorder-btn {
+        padding: 5px 8px;
+        font-size: 12px;
+        margin-right: 5px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        background-color: #2196F3;
+        color: white;
+        min-width: 30px;
+      }
+
+      .reorder-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .delete-btn {
+        padding: 5px 8px;
+        font-size: 12px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        background-color: #f44336;
+        color: white;
+        min-width: 60px;
+      }
+
+      #qr-log .button-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+
+      #clear-log {
+        padding: 8px 16px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #clear-log:hover {
+        background-color: #da190b;
+      }
+
+      #close-log {
+        padding: 8px 16px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        background-color: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #close-log:hover {
+        background-color: #1e87db;
+      }
+
+      #slit-scanner-page, #rgb-filter-page, #lock-page {
+        width: 100%;
+        height: 100vh;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        background-color: #000000;
+        overflow: hidden;
+        position: relative;
+      }
+
+      #slit-scanner-canvas, #rgb-filter-canvas, #lock-canvas {
+        display: block;
+        width: 100vw;
+        max-width: 100%;
+        height: calc(100vh - 50px);
+        object-fit: cover;
+        position: absolute;
+        top: 50px;
+        left: 0;
+      }
+
+      #image-popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 30;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #image-popup img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+      }
+
+      #image-popup-close {
+        position: absolute;
+        top: 60px;
+        right: 10px;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+        line-height: 30px;
+        text-align: center;
+        cursor: pointer;
+        z-index: 31;
+      }
+
+      #image-popup-close:hover {
+        background-color: #da190b;
+      }
+
+      #confetti-popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 35;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+      }
+
+      #confetti-popup img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        opacity: 0.9;
+      }
+
+      #lock-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 400px;
+        height: auto;
+        max-height: 80vh;
+        background-color: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        z-index: 100;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 15px;
+        backdrop-filter: blur(5px);
+      }
+
+      #lock-canvas-container {
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: center;
+      }
+
+      #lock-popup .button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+      }
+
+      #lock-cancel {
+        padding: 8px 16px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #lock-cancel:hover {
+        background-color: #da190b;
+      }
+
+      #lock-popup-close {
+        position: absolute;
+        top: 60px;
+        right: 10px;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+        line-height: 30px;
+        text-align: center;
+        cursor: pointer;
+        z-index: 101;
+      }
+
+      #lock-popup-close:hover {
+        background-color: #da190b;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="top-bar">
+      <div id="left-buttons">
+        <button id="view-log" style="display: none;">View Log</button>
+        <button id="home-btn" style="display: none;">Home</button>
+      </div>
+      <div id="right-buttons">
+        <button id="magic-lens-btn" style="display: none;">Magic Lens</button>
+        <button id="slit-scanner-btn" style="display: none;">Slit Scanner</button>
+      </div>
+    </div>
+    <div id="qr-reader"></div>
+    <div id="qr-result" class="qr-result"></div>
+    <div id="qr-log" class="qr-log" style="display: none;">
+      <h2>QR Code Log</h2>
+      <ul id="log-list"></ul>
+      <div class="button-container">
+        <button id="clear-log">Clear Log</button>
+        <button id="close-log">Close</button>
+      </div>
+    </div>
+    <div id="image-popup" style="display: none;">
+      <img id="popup-image" src="" alt="QR Image" />
+      <button id="image-popup-close">x</button>
+    </div>
+    <div id="confetti-popup" style="display: none;">
+      <img id="confetti-image" src="" alt="Confetti" />
+    </div>
+    <div id="slit-scanner-page">
+      <div id="slit-scanner-canvas"></div>
+    </div>
+    <div id="rgb-filter-page">
+      <div id="rgb-filter-canvas"></div>
+    </div>
+    <div id="lock-page">
+      <div id="lock-canvas"></div>
+    </div>
+    <div id="lock-popup" style="display: none;">
+      <button id="lock-popup-close">x</button>
+      <div id="lock-canvas-container"></div>
+      <div class="button-container">
+        <button id="lock-cancel">Cancel</button>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("DOM loaded, initializing app");
+
+        // Clear localStorage to reset game state
+        localStorage.removeItem("qrLog");
+        localStorage.removeItem("unlockedTools");
+        console.log("localStorage cleared for qrLog and unlockedTools");
+
+        const resultDiv = document.getElementById("qr-result");
+        const viewLogButton = document.getElementById("view-log");
+        const logDiv = document.getElementById("qr-log");
+        const logList = document.getElementById("log-list");
+        const closeLogButton = document.getElementById("close-log");
+        const clearLogButton = document.getElementById("clear-log");
+        const slitScannerButton = document.getElementById("slit-scanner-btn");
+        const magicLensButton = document.getElementById("magic-lens-btn");
+        const homeButton = document.getElementById("home-btn");
+        const qrReader = document.getElementById("qr-reader");
+        const slitScannerPage = document.getElementById("slit-scanner-page");
+        const rgbFilterPage = document.getElementById("rgb-filter-page");
+        const lockPage = document.getElementById("lock-page");
+        const imagePopup = document.getElementById("image-popup");
+        const popupImage = document.getElementById("popup-image");
+        const imagePopupClose = document.getElementById("image-popup-close");
+        const confettiPopup = document.getElementById("confetti-popup");
+        const confettiImage = document.getElementById("confetti-image");
+        const lockPopup = document.getElementById("lock-popup");
+        const lockCancelButton = document.getElementById("lock-cancel");
+        const lockPopupClose = document.getElementById("lock-popup-close");
+
+        if (!resultDiv || !viewLogButton || !logDiv || !logList || 
+            !closeLogButton || !clearLogButton || !slitScannerButton || !magicLensButton || 
+            !homeButton || !qrReader || !slitScannerPage || !rgbFilterPage || !lockPage ||
+            !imagePopup || !popupImage || !imagePopupClose || !confettiPopup || !confettiImage || 
+            !lockPopup || !lockCancelButton || !lockPopupClose) {
+          console.error("Error: Missing DOM elements");
+          return;
+        }
+
+        let clearTextTimer = null;
+        let unlockedRoom = 1;
+        let qrLog = [];
+        let lastScanText = null;
+        let isProcessingScan = false;
+        let currentView = "scanner";
+        let html5QrcodeScanner = null;
+        let slitScannerInstance = null;
+        let rgbFilterInstance = null;
+        let lockInstance = null;
+        let unlockedTools = { "Slit Scanner": false, "Magic Lens": false };
+        let selectedCameraId = null;
+        let isShowingOpenLock = false;
+        let lastTapTime = 0;
+        const tapDebounceDelay = 200;
+
+        // Initialize button visibility
+        viewLogButton.style.display = "none";
+        slitScannerButton.style.display = "none";
+        magicLensButton.style.display = "none";
+        console.log("Initial state: qrLog=", qrLog, "unlockedTools=", unlockedTools);
+
+        // QR code mappings
+        const qrMappings = {
+          "1234": {
+            room: true,
+            messages: {
+              1: "The door unlocks, unfold to reveal the room",
+              2: "The door unlocks, unfold to proceed",
+              3: "You are nearing the end"
+            }
+          },
+          "1605": {
+            text: "Home by Kit Chan",
+            linkText: "Home",
+            image: "img/1605.png"
+          },
+          "0330": {
+            text: "Hello by Adele",
+            linkText: "Hello",
+            image: "img/0330.png"
+          },
+          "0405": {
+            text: "Meet Me in Amsterdam by RINI",
+            linkText: "Meet Me in Amsterdam",
+            image: "img/0405.png"
+          },
+          "New Tool Unlocked!: Slit Scanner": {
+            text: "New Tool Unlocked!: Slit Scanner",
+            linkText: "Slit Scanner",
+            tool: "Slit Scanner"
+          },
+          "RGB": {
+            text: "New Tool Unlocked!: Slit Scanner",
+            linkText: "Slit Scanner",
+            tool: "Slit Scanner"
+          },
+          "New Tool Unlocked!: Magic Lens": {
+            text: "New Tool Unlocked!: Magic Lens",
+            linkText: "Magic Lens",
+            tool: "Magic Lens"
+          },
+          "Lock": {
+            text: "Confidential",
+            action: "showLock"
+          }
+        };
+
+        // Parse QR text
+        function parseQRText(text) {
+          console.log(`Parsing QR text: '${text}'`);
+          const cleaned = text.replace(/^\d+: */, '').replace(/#[\d]+/, '').trim();
+          console.log(`Cleaned text: '${cleaned}'`);
+          const match = text.match(/^(\d+): *(.*)$/);
+          const room = match ? parseInt(match[1]) : 1;
+          console.log(`Parsed: room=${room}, content='${cleaned}'`);
+          return { room, content: cleaned };
+        }
+
+        // Format text for display
+        function formatText(text, forLog = false) {
+          if (qrMappings.hasOwnProperty(text)) {
+            const mapping = qrMappings[text];
+            if (mapping.room) {
+              return mapping.messages[unlockedRoom] || "You are nearing the end";
+            }
+            if (mapping.image && forLog) {
+              return mapping.text.replace(
+                mapping.linkText,
+                `<a href="#" class="image-link" data-image="${mapping.image}">${mapping.linkText}</a>`
+              );
+            }
+            return mapping.text;
+          }
+          return text.replace(/\b(https?:\/\/[^\s]+|www\.[^\s]+)/gi, function(url) {
+            const href = url.match(/^https?:\/\//) ? url : `https://${url}`;
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+          });
+        }
+
+        // Show image pop-up
+        function showImagePopup(imageSrc, isOpenLock = false) {
+          console.log(`Attempting to show image pop-up: ${imageSrc}, isOpenLock=${isOpenLock}`);
+          popupImage.src = imageSrc;
+          imagePopup.style.display = "flex";
+          imagePopup.offsetHeight; // Force DOM reflow
+          isShowingOpenLock = isOpenLock;
+          // Show/hide close button based on image
+          if (imageSrc.includes("openlock.png") || imageSrc.includes("openlockcloseup.png")) {
+            imagePopupClose.style.display = "none";
+            console.log("Hiding image pop-up close button for", imageSrc);
+          } else {
+            imagePopupClose.style.display = "block";
+            console.log("Showing image pop-up close button for", imageSrc);
+          }
+          console.log("Image pop-up display set to flex, style.display:", imagePopup.style.display, "image src:", popupImage.src);
+        }
+
+        // Show confetti pop-up
+        function showConfettiPopup() {
+          console.log("Attempting to show confetti pop-up: img/confetti.gif");
+          confettiImage.src = "img/confetti.gif";
+          confettiPopup.style.display = "flex";
+          confettiPopup.offsetHeight; // Force DOM reflow
+          console.log("Confetti pop-up display set to flex, style.display:", confettiPopup.style.display, "image src:", confettiImage.src);
+          setTimeout(() => {
+            console.log("Hiding confetti pop-up after 3 seconds");
+            confettiPopup.style.display = "none";
+            confettiImage.src = "";
+            console.log("Confetti pop-up hidden, style.display:", confettiPopup.style.display);
+          }, 3000);
+        }
+
+        // Close image and confetti pop-ups
+        function closeImageAndConfettiPopups() {
+          console.log("Closing image and confetti pop-ups");
+          imagePopup.style.display = "none";
+          confettiPopup.style.display = "none";
+          popupImage.src = "";
+          confettiImage.src = "";
+          imagePopupClose.style.display = "none";
+          isShowingOpenLock = false;
+          isProcessingScan = false;
+          lastScanText = null;
+          switchView("scanner");
+        }
+
+        // Handle image pop-up click/touch
+        function handleImagePopupClick(e) {
+          const currentTime = Date.now();
+          if (currentTime - lastTapTime < tapDebounceDelay) {
+            console.log("Debouncing: Ignoring rapid tap on image pop-up");
+            return;
+          }
+          lastTapTime = currentTime;
+          console.log("Image pop-up tapped, isShowingOpenLock:", isShowingOpenLock, "current image:", popupImage.src);
+          if (isShowingOpenLock) {
+            console.log("Switching from openlock.png to openlockcloseup.png");
+            imagePopup.style.display = "none";
+            popupImage.src = "";
+            showImagePopup("img/openlockcloseup.png", false);
+            showConfettiPopup();
+            isShowingOpenLock = false;
+          } else if (popupImage.src.includes("openlockcloseup.png")) {
+            console.log("Closing openlockcloseup.png and returning to scanner");
+            closeImageAndConfettiPopups();
+          } else {
+            console.log("Closing other image pop-up via tap");
+            closeImageAndConfettiPopups();
+          }
+        }
+
+        // Handle image pop-up close button click
+        imagePopupClose.addEventListener("click", () => {
+          console.log("Image pop-up close button clicked");
+          closeImageAndConfettiPopups();
+        });
+
+        // Add click and touch event listeners for image pop-up
+        imagePopup.addEventListener("click", handleImagePopupClick);
+        imagePopup.addEventListener("touchstart", handleImagePopupClick);
+
+        // Stop QR scanner stream
+        function stopQRScannerStream() {
+          if (html5QrcodeScanner) {
+            try {
+              console.log("Stopping QR scanner stream");
+              const videoElement = qrReader.querySelector('video');
+              if (videoElement && videoElement.srcObject) {
+                const stream = videoElement.srcObject;
+                const tracks = stream.getTracks();
+                tracks.forEach(track => {
+                  track.stop();
+                  console.log("QR scanner video track stopped:", track.label);
+                });
+                videoElement.srcObject = null;
+              }
+              html5QrcodeScanner.clear();
+              html5QrcodeScanner = null;
+              console.log("QR scanner cleared");
+            } catch (err) {
+              console.error("Error stopping QR scanner stream:", err);
+            }
+          }
+        }
+
+        // Clean up p5.js canvases
+        function cleanUpCanvases() {
+          console.log("Cleaning up canvases");
+          const slitCanvas = slitScannerPage.querySelector('canvas');
+          const rgbCanvas = rgbFilterPage.querySelector('canvas');
+          const lockCanvas = lockPage.querySelector('canvas');
+          const lockPopupCanvas = lockPopup.querySelector('canvas');
+          if (slitCanvas) {
+            slitCanvas.remove();
+            console.log("Slit Scanner canvas removed");
+          }
+          if (rgbCanvas) {
+            rgbCanvas.remove();
+            console.log("RGB Filter canvas removed");
+          }
+          if (lockCanvas) {
+            lockCanvas.remove();
+            console.log("Lock canvas removed");
+          }
+          if (lockPopupCanvas) {
+            lockPopupCanvas.remove();
+            console.log("Lock pop-up canvas removed");
+          }
+        }
+
+        // Switch views
+        function switchView(view) {
+          if (currentView === view) {
+            console.log(`Already in view: ${view}`);
+            return;
+          }
+          console.log(`Switching to view: ${view}`);
+
+          if (currentView === "scanner") {
+            stopQRScannerStream();
+          } else if (currentView === "slit-scanner" && slitScannerInstance) {
+            console.log("Removing Slit Scanner instance");
+            try {
+              slitScannerInstance.noLoop();
+              slitScannerInstance.remove();
+              slitScannerInstance = null;
+              console.log("Slit Scanner instance removed");
+            } catch (err) {
+              console.error("Error removing Slit Scanner:", err);
+            }
+          } else if (currentView === "rgb-filter" && rgbFilterInstance) {
+            console.log("Removing RGB Filter instance");
+            try {
+              rgbFilterInstance.noLoop();
+              rgbFilterInstance.remove();
+              rgbFilterInstance = null;
+              console.log("RGB Filter instance removed");
+            } catch (err) {
+              console.error("Error removing RGB Filter:", err);
+            }
+          } else if (currentView === "lock" && lockInstance) {
+            console.log("Removing Lock instance");
+            try {
+              lockInstance.noLoop();
+              lockInstance.remove();
+              lockInstance = null;
+              console.log("Lock instance removed");
+            } catch (err) {
+              console.error("Error removing Lock:", err);
+            }
+          }
+
+          cleanUpCanvases();
+
+          currentView = view;
+
+          qrReader.style.display = view === "scanner" ? "block" : "none";
+          resultDiv.style.display = view === "scanner" ? "block" : "none";
+          slitScannerPage.style.display = view === "slit-scanner" ? "flex" : "none";
+          rgbFilterPage.style.display = view === "rgb-filter" ? "flex" : "none";
+          lockPage.style.display = view === "lock" ? "flex" : "none";
+          homeButton.style.display = view === "scanner" ? "none" : "block";
+          viewLogButton.style.display = view === "scanner" && qrLog.length > 0 ? "block" : "none";
+          slitScannerButton.style.display = view === "scanner" && unlockedTools["Slit Scanner"] ? "block" : "none";
+          magicLensButton.style.display = view === "scanner" && unlockedTools["Magic Lens"] ? "block" : "none";
+
+          console.log(`DOM state: qrReader=${qrReader.style.display}, slitScannerPage=${slitScannerPage.style.display}, rgbFilterPage=${rgbFilterPage.style.display}, lockPage=${lockPage.style.display}, homeButton=${homeButton.style.display}`);
+
+          if (view === "scanner") {
+            console.log("Initializing QR scanner");
+            setTimeout(() => {
+              try {
+                html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", {
+                  fps: 10,
+                  qrbox: Math.min(window.innerWidth * 0.8, 250),
+                  facingMode: "environment",
+                  cameraId: selectedCameraId
+                });
+                html5QrcodeScanner.render(onScanSuccess, onScanError, (cameraId) => {
+                  selectedCameraId = cameraId;
+                  console.log("Selected camera ID:", selectedCameraId);
+                });
+                console.log("QR scanner initialized");
+              } catch (err) {
+                console.error("Error initializing QR scanner:", err);
+                resultDiv.style.display = "block";
+                resultDiv.innerHTML = "Error: Unable to start QR scanner. Please check camera permissions or refresh.";
+              }
+            }, 200);
+          } else if (view === "slit-scanner") {
+            console.log("Initializing Slit Scanner");
+            slitScannerInstance = new p5(slitScannerSketch, "slit-scanner-canvas");
+          } else if (view === "rgb-filter") {
+            console.log("Initializing RGB Filter");
+            rgbFilterInstance = new p5(rgbFilterSketch, "rgb-filter-canvas");
+          } else if (view === "lock") {
+            console.log("Initializing Lock");
+            lockInstance = new p5(lockSketch, "lock-canvas");
+          }
+        }
+
+        // Store QR code in log
+        function storeQRCode(qrText) {
+          qrLog = JSON.parse(localStorage.getItem("qrLog") || "[]");
+          qrLog.push({ text: qrText });
+          localStorage.setItem("qrLog", JSON.stringify(qrLog));
+          console.log("Stored QR:", qrText, "New qrLog:", qrLog);
+          viewLogButton.style.display = "block";
+        }
+
+        // Show lock pop-up
+        function showLockPopup() {
+          console.log("Attempting to show lock pop-up");
+          lockPopup.style.display = "flex";
+          lockPopup.offsetHeight; // Force DOM reflow
+          console.log("Lock pop-up display set to flex, style.display:", lockPopup.style.display);
+          if (!lockInstance) {
+            console.log("Initializing lock sketch in lock-canvas-container");
+            lockInstance = new p5(lockSketch, "lock-canvas-container");
+            console.log("Lock sketch initialized");
+          } else {
+            console.log("Lock sketch already initialized");
+          }
+        }
+
+        // Close lock pop-up
+        function closeLockPopup() {
+          console.log("Closing lock pop-up");
+          lockPopup.style.display = "none";
+          if (lockInstance) {
+            try {
+              lockInstance.noLoop();
+              lockInstance.remove();
+              lockInstance = null;
+              console.log("Lock instance removed");
+            } catch (err) {
+              console.error("Error removing Lock instance:", err);
+            }
+          }
+          cleanUpCanvases();
+          isProcessingScan = false;
+          lastScanText = null;
+          switchView("scanner");
+        }
+
+        lockCancelButton.addEventListener("click", closeLockPopup);
+        lockPopupClose.addEventListener("click", closeLockPopup);
+
+        // QR scan handler
+        function onScanSuccess(decodedText, decodedResult) {
+          if (isProcessingScan || decodedText === lastScanText) {
+            console.log(`Debouncing: Ignoring scan of '${decodedText}' (isProcessingScan: ${isProcessingScan})`);
+            return;
+          }
+          isProcessingScan = true;
+          lastScanText = decodedText;
+
+          console.log(`Code scanned = '${decodedText}'`, decodedResult);
+          const parsed = parseQRText(decodedText);
+          const { room, content } = parsed;
+          console.log(`Parsed: room=${room}, content='${content}', unlockedRoom=${unlockedRoom}`);
+
+          if (clearTextTimer) {
+            clearTimeout(clearTextTimer);
+            clearTextTimer = null;
+          }
+
+          if (room > unlockedRoom) {
+            console.log(`Room ${room} locked, displaying 'To be unlocked'`);
+            resultDiv.innerHTML = "To be unlocked";
+            resultDiv.style.display = "block";
+            clearTextTimer = setTimeout(() => {
+              resultDiv.style.display = "none";
+              resultDiv.innerHTML = "";
+              isProcessingScan = false;
+              lastScanText = null;
+            }, 3000);
+            return;
+          }
+
+          if (content === '1234') {
+            let message = qrMappings["1234"].messages[room] || "You are nearing the end";
+            console.log(`Key detected: room=${room}, displaying message='${message}'`);
+            resultDiv.innerHTML = message;
+            resultDiv.style.display = "block";
+            storeQRCode(content);
+            if (room === unlockedRoom) {
+              unlockedRoom = room + 1;
+              console.log(`Updated unlockedRoom to ${unlockedRoom}`);
+            }
+            clearTextTimer = setTimeout(() => {
+              resultDiv.style.display = "none";
+              resultDiv.innerHTML = "";
+              isProcessingScan = false;
+              lastScanText = null;
+            }, 3000);
+            return;
+          }
+
+          if (content === "New Tool Unlocked!: Slit Scanner" || content === "RGB" || content === "New Tool Unlocked!: Magic Lens") {
+            const tool = qrMappings[content].tool;
+            console.log(`Unlocking tool: ${tool}`);
+            unlockedTools[tool] = true;
+            localStorage.setItem("unlockedTools", JSON.stringify(unlockedTools));
+            slitScannerButton.style.display = unlockedTools["Slit Scanner"] ? "block" : "none";
+            magicLensButton.style.display = unlockedTools["Magic Lens"] ? "block" : "none";
+            resultDiv.innerHTML = formatText(content);
+            resultDiv.style.display = "block";
+            storeQRCode(content);
+            clearTextTimer = setTimeout(() => {
+              resultDiv.style.display = "none";
+              resultDiv.innerHTML = "";
+              isProcessingScan = false;
+              lastScanText = null;
+            }, 3000);
+            return;
+          }
+
+          if (content === "Lock") {
+            console.log("Lock QR code scanned: displaying 'Confidential' and triggering lock pop-up");
+            resultDiv.innerHTML = formatText(content);
+            resultDiv.style.display = "block";
+            storeQRCode(content);
+            showLockPopup();
+            clearTextTimer = setTimeout(() => {
+              resultDiv.style.display = "none";
+              resultDiv.innerHTML = "";
+            }, 3000);
+            return;
+          }
+
+          if (qrMappings.hasOwnProperty(content) && qrMappings[content].image) {
+            console.log(`Image QR code: displaying text='${qrMappings[content].text}', image='${qrMappings[content].image}'`);
+            resultDiv.innerHTML = formatText(content);
+            resultDiv.style.display = "block";
+            storeQRCode(content);
+            showImagePopup(qrMappings[content].image);
+            // Only set timer for non-persistent images (e.g., exclude 0330, 0405, 1605)
+            if (content !== "0330" && content !== "0405" && content !== "1605") {
+              clearTextTimer = setTimeout(() => {
+                resultDiv.style.display = "none";
+                resultDiv.innerHTML = "";
+                isProcessingScan = false;
+                lastScanText = null;
+              }, 3000);
+            }
+            return;
+          }
+
+          console.log(`Non-key code: displaying content='${content}'`);
+          resultDiv.innerHTML = formatText(content);
+          resultDiv.style.display = "block";
+          storeQRCode(content);
+          clearTextTimer = setTimeout(() => {
+            resultDiv.style.display = "none";
+            resultDiv.innerHTML = "";
+            isProcessingScan = false;
+            lastScanText = null;
+          }, 3000);
+        }
+
+        function onScanError(error) {
+          console.error(`Scan error: ${error}`);
+          isProcessingScan = false;
+        }
+
+        // Log management
+        function populateLog(qrLog) {
+          logList.innerHTML = "";
+          if (qrLog.length === 0) {
+            logList.innerHTML = "<li>No QR codes stored yet.</li>";
+            viewLogButton.style.display = "none";
+            return;
+          }
+
+          qrLog.slice().reverse().forEach((entry, reverseIndex) => {
+            const index = qrLog.length - 1 - reverseIndex;
+            const li = document.createElement("li");
+            li.setAttribute("data-index", index);
+
+            const textSpan = document.createElement("span");
+            textSpan.className = "log-text";
+            textSpan.innerHTML = formatText(entry.text, true);
+
+            const upBtn = document.createElement("button");
+            upBtn.className = "reorder-btn up-btn";
+            upBtn.textContent = "↑";
+            upBtn.disabled = reverseIndex === 0;
+
+            const downBtn = document.createElement("button");
+            downBtn.className = "reorder-btn down-btn";
+            downBtn.textContent = "↓";
+            downBtn.disabled = reverseIndex === qrLog.length - 1;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.textContent = "Delete";
+
+            upBtn.addEventListener("click", () => reorderLog(index, index + 1));
+            downBtn.addEventListener("click", () => reorderLog(index, index - 1));
+            deleteBtn.addEventListener("click", () => deleteLogEntry(index));
+
+            li.appendChild(textSpan);
+            li.appendChild(upBtn);
+            li.appendChild(downBtn);
+            li.appendChild(deleteBtn);
+            logList.appendChild(li);
+          });
+
+          const imageLinks = logList.querySelectorAll(".image-link");
+          imageLinks.forEach(link => {
+            link.addEventListener("click", (e) => {
+              e.preventDefault();
+              const imageSrc = link.dataset.image;
+              console.log(`Log image link clicked: ${imageSrc}`);
+              showImagePopup(imageSrc);
+            });
+          });
+        }
+
+        function reorderLog(fromIndex, toIndex) {
+          qrLog = JSON.parse(localStorage.getItem("qrLog") || "[]");
+          if (toIndex >= 0 && toIndex < qrLog.length) {
+            const [movedItem] = qrLog.splice(fromIndex, 1);
+            qrLog.splice(toIndex, 0, movedItem);
+            localStorage.setItem("qrLog", JSON.stringify(qrLog));
+            console.log("Reordered qrLog:", qrLog);
+            populateLog(qrLog);
+          }
+        }
+
+        function deleteLogEntry(index) {
+          qrLog = JSON.parse(localStorage.getItem("qrLog") || "[]");
+          qrLog.splice(index, 1);
+          localStorage.setItem("qrLog", JSON.stringify(qrLog));
+          console.log("Deleted entry, new qrLog:", qrLog);
+          populateLog(qrLog);
+          viewLogButton.style.display = qrLog.length > 0 ? "block" : "none";
+        }
+
+        clearLogButton.addEventListener("click", () => {
+          if (confirm("Are you sure you want to clear all QR codes from the log?")) {
+            qrLog = [];
+            localStorage.setItem("qrLog", JSON.stringify(qrLog));
+            console.log("Cleared qrLog:", qrLog);
+            populateLog(qrLog);
+            viewLogButton.style.display = "none";
+            logDiv.style.display = "none";
+          }
+        });
+
+        viewLogButton.addEventListener("click", () => {
+          qrLog = JSON.parse(localStorage.getItem("qrLog") || "[]");
+          console.log("Opening log, qrLog:", qrLog);
+          populateLog(qrLog);
+          logDiv.style.display = "block";
+        });
+
+        closeLogButton.addEventListener("click", () => {
+          logDiv.style.display = "none";
+        });
+
+        slitScannerButton.addEventListener("click", () => switchView("slit-scanner"));
+        magicLensButton.addEventListener("click", () => switchView("rgb-filter"));
+        homeButton.addEventListener("click", () => {
+          console.log("Home button clicked");
+          closeImageAndConfettiPopups();
+        });
+
+        console.log("Starting initial view: scanner");
+        const config = {
+          fps: 10,
+          qrbox: Math.min(window.innerWidth * 0.8, 250),
+          facingMode: "environment"
+        };
+        html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config);
+        html5QrcodeScanner.render(onScanSuccess, onScanError, (cameraId) => {
+          selectedCameraId = cameraId;
+          console.log("Selected camera ID:", selectedCameraId);
+        });
+        console.log("QR scanner initialized");
+
+        // Lock Sketch
+        const lockSketch = (p) => {
+          let passcode = "1234";
+          let successMessage = "Access Granted!";
+          let enteredCode = "";
+          let statusMessage = "";
+          let indicatorColor = "#FFFFFF";
+          let scaleFactor;
+          let canvasWidth, canvasHeight;
+          let lastPressTime = 0;
+          const debounceDelay = 200;
+
+          p.setup = () => {
+            console.log("Lock: setup");
+            canvasWidth = Math.min(window.innerWidth, 400);
+            canvasHeight = Math.min(window.innerHeight, 650);
+            scaleFactor = canvasWidth / 400;
+            p.createCanvas(canvasWidth, canvasHeight);
+            p.textAlign(p.CENTER);
+            p.textSize(32 * scaleFactor);
+            window.addEventListener('resize', () => {
+              p.windowResized();
+            });
+          };
+
+          p.draw = () => {
+            p.background(220);
+            p.fill(150);
+            p.rect(50 * scaleFactor, 40 * scaleFactor, 300 * scaleFactor, 60 * scaleFactor, 10 * scaleFactor);
+            p.fill(0);
+            p.textSize(32 * scaleFactor);
+            p.text(enteredCode, canvasWidth / 2, 80 * scaleFactor);
+            p.fill(indicatorColor);
+            p.text(statusMessage, canvasWidth / 2, 140 * scaleFactor);
+            drawButton(100 * scaleFactor, 200 * scaleFactor, "1");
+            drawButton(200 * scaleFactor, 200 * scaleFactor, "2");
+            drawButton(300 * scaleFactor, 200 * scaleFactor, "3");
+            drawButton(100 * scaleFactor, 300 * scaleFactor, "4");
+            drawButton(200 * scaleFactor, 300 * scaleFactor, "5");
+            drawButton(300 * scaleFactor, 300 * scaleFactor, "6");
+            drawButton(100 * scaleFactor, 400 * scaleFactor, "7");
+            drawButton(200 * scaleFactor, 400 * scaleFactor, "8");
+            drawButton(300 * scaleFactor, 400 * scaleFactor, "9");
+            drawButton(200 * scaleFactor, 500 * scaleFactor, "0");
+            drawButton(canvasWidth - 100 * scaleFactor, canvasHeight - 80 * scaleFactor, "Enter", true);
+            drawButton(100 * scaleFactor, canvasHeight - 80 * scaleFactor, "Clear", true);
+          };
+
+          function drawButton(x, y, label, isSpecial = false) {
+            p.fill(200);
+            if (isSpecial) {
+              p.circle(x, y, 80 * scaleFactor);
+            } else {
+              p.rect(x - 40 * scaleFactor, y - 40 * scaleFactor, 80 * scaleFactor, 80 * scaleFactor, 10 * scaleFactor);
+            }
+            p.fill(0);
+            p.textSize(isSpecial ? 24 * scaleFactor : 32 * scaleFactor);
+            p.text(label, x, y + 10 * scaleFactor);
+          }
+
+          p.mousePressed = () => {
+            const currentTime = p.millis();
+            if (currentTime - lastPressTime < debounceDelay) {
+              console.log("Debouncing: Ignoring rapid click");
+              return;
+            }
+            lastPressTime = currentTime;
+
+            checkButtonPress(100 * scaleFactor, 200 * scaleFactor, "1", false);
+            checkButtonPress(200 * scaleFactor, 200 * scaleFactor, "2", false);
+            checkButtonPress(300 * scaleFactor, 200 * scaleFactor, "3", false);
+            checkButtonPress(100 * scaleFactor, 300 * scaleFactor, "4", false);
+            checkButtonPress(200 * scaleFactor, 300 * scaleFactor, "5", false);
+            checkButtonPress(300 * scaleFactor, 300 * scaleFactor, "6", false);
+            checkButtonPress(100 * scaleFactor, 400 * scaleFactor, "7", false);
+            checkButtonPress(200 * scaleFactor, 400 * scaleFactor, "8", false);
+            checkButtonPress(300 * scaleFactor, 400 * scaleFactor, "9", false);
+            checkButtonPress(200 * scaleFactor, 500 * scaleFactor, "0", false);
+            if (p.dist(p.mouseX, p.mouseY, canvasWidth - 100 * scaleFactor, canvasHeight - 80 * scaleFactor) < 40 * scaleFactor) {
+              verifyCode();
+            }
+            if (p.dist(p.mouseX, p.mouseY, 100 * scaleFactor, canvasHeight - 80 * scaleFactor) < 40 * scaleFactor) {
+              enteredCode = "";
+              statusMessage = "";
+              indicatorColor = "#FFFFFF";
+            }
+          };
+
+          function checkButtonPress(x, y, digit, isSpecial = false) {
+            if (isSpecial) {
+              if (p.dist(p.mouseX, p.mouseY, x, y) < 40 * scaleFactor) {
+                enteredCode += digit;
+              }
+            } else {
+              if (p.mouseX > x - 40 * scaleFactor && p.mouseX < x + 40 * scaleFactor && 
+                  p.mouseY > y - 40 * scaleFactor && p.mouseY < y + 40 * scaleFactor) {
+                enteredCode += digit;
+              }
+            }
+          }
+
+          function verifyCode() {
+            if (enteredCode === passcode) {
+              statusMessage = successMessage;
+              indicatorColor = "#00FF00";
+              console.log("Correct passcode entered, closing lock pop-up and showing openlock.png");
+              setTimeout(() => {
+                lockPopup.style.display = "none";
+                console.log("Lock pop-up hidden, style.display:", lockPopup.style.display);
+                if (lockInstance) {
+                  try {
+                    lockInstance.noLoop();
+                    lockInstance.remove();
+                    lockInstance = null;
+                    console.log("Lock instance removed after success");
+                  } catch (err) {
+                    console.error("Error removing lock instance:", err);
+                  }
+                }
+                cleanUpCanvases();
+                showImagePopup("img/openlock.png", true);
+              }, 1000);
+            } else {
+              statusMessage = "Wrong";
+              indicatorColor = "#FF0000";
+              enteredCode = "";
+              setTimeout(() => {
+                statusMessage = "";
+                indicatorColor = "#FFFFFF";
+              }, 2000);
+            }
+          }
+
+          p.windowResized = () => {
+            console.log("Lock: windowResized");
+            canvasWidth = Math.min(window.innerWidth, 400);
+            canvasHeight = Math.min(window.innerHeight, 650);
+            scaleFactor = canvasWidth / 400;
+            p.resizeCanvas(canvasWidth, canvasHeight);
+          };
+
+          p.remove = () => {
+            console.log("Lock: Removing sketch");
+            p.noLoop();
+            p.remove();
+          };
+        };
+
+        // Slit Scanner Sketch
+        const slitScannerSketch = (p) => {
+          let video;
+          let scan;
+          let cameraInitialized = false;
+
+          p.setup = () => {
+            console.log("Slit Scanner: setup");
+            const canvasWidth = window.innerWidth;
+            const canvasHeight = document.documentElement.clientHeight - 50;
+            p.createCanvas(canvasWidth, canvasHeight);
+            p.pixelDensity(1);
+
+            let constraints = {
+              video: {
+                facingMode: { exact: "environment" },
+                width: { ideal: 1280, min: 640 },
+                height: { ideal: 720, min: 480 }
+              },
+              audio: false
+            };
+
+            try {
+              video = p.createCapture(constraints, function(stream) {
+                if (stream && stream.active) {
+                  console.log("Slit Scanner camera resolution:", video.width, "x", video.height);
+                  cameraInitialized = true;
+                } else {
+                  console.error("Slit Scanner: Camera stream not active");
+                  cameraInitialized = false;
+                  let fallbackConstraints = {
+                    video: { facingMode: { exact: "environment" } },
+                    audio: false
+                  };
+                  video = p.createCapture(fallbackConstraints, function(fallbackStream) {
+                    if (fallbackStream && fallbackStream.active) {
+                      console.log("Slit Scanner fallback camera resolution:", video.width, "x", video.height);
+                      cameraInitialized = true;
+                    } else {
+                      console.error("Slit Scanner: Fallback camera stream not active");
+                      cameraInitialized = false;
+                    }
+                  });
+                  video.hide();
+                }
+              });
+              p.video = video;
+              video.hide();
+            } catch (err) {
+              console.error("Slit Scanner: Error creating capture:", err);
+              cameraInitialized = false;
+            }
+
+            scan = p.createGraphics(Math.floor(canvasWidth / 2), canvasHeight);
+            scan.background(0);
+
+            window.addEventListener('resize', () => {
+              p.windowResized();
+            });
+          };
+
+          p.draw = () => {
+            p.background(0);
+
+            if (!video || !video.loadedmetadata || !cameraInitialized) {
+              p.fill(255);
+              p.textSize(20);
+              p.textAlign(p.CENTER);
+              if (p.millis() > 15000) {
+                p.text("Error: Camera failed to load. Please check permissions or refresh the page.", p.width / 2, p.height / 2, p.width - 40);
+                if (video && !cameraInitialized) {
+                  console.log("Slit Scanner: Attempting to restart video stream");
+                  video.remove();
+                  let constraints = {
+                    video: { facingMode: { exact: "environment" } },
+                    audio: false
+                  };
+                  video = p.createCapture(constraints, function(stream) {
+                    if (stream && stream.active) {
+                      console.log("Slit Scanner restart camera resolution:", video.width, "x", video.height);
+                      cameraInitialized = true;
+                    }
+                  });
+                  p.video = video;
+                  video.hide();
+                }
+              } else {
+                p.text("Loading camera...", p.width / 2, p.height / 2);
+              }
+              return;
+            }
+
+            p.image(video, 0, 0, p.width, p.height);
+            let slitX = p.width / 2;
+            p.stroke(255, 0, 0);
+            p.strokeWeight(4);
+            p.line(slitX, 0, slitX, p.height);
+            scan.copy(scan, 0, 0, scan.width - 1, scan.height, 1, 0, scan.width - 1, scan.height);
+            let scaleX = video.width / p.width;
+            let sourceX = Math.floor(slitX * scaleX);
+            if (sourceX >= 0 && sourceX < video.width) {
+              scan.copy(video, sourceX, 0, 1, video.height, 0, 0, 1, scan.height);
+            }
+            p.image(scan, slitX, 0, p.width - slitX, p.height);
+          };
+
+          p.windowResized = () => {
+            console.log("Slit Scanner: windowResized");
+            const canvasWidth = window.innerWidth;
+            const canvasHeight = document.documentElement.clientHeight - 50;
+            p.resizeCanvas(canvasWidth, canvasHeight);
+            scan = p.createGraphics(Math.floor(canvasWidth / 2), canvasHeight);
+            scan.background(0);
+          };
+
+          p.remove = () => {
+            console.log("Slit Scanner: Removing sketch");
+            p.noLoop();
+            if (p.video && p.video.elt.srcObject) {
+              try {
+                const stream = p.video.elt.srcObject;
+                const tracks = stream.getTracks();
+                tracks.forEach(track => {
+                  track.stop();
+                  console.log("Slit Scanner video track stopped:", track.label);
+                });
+                p.video.elt.srcObject = null;
+                console.log("Slit Scanner video stream cleared");
+              } catch (err) {
+                console.error("Error stopping Slit Scanner video stream:", err);
+              }
+            }
+            p.remove();
+          };
+        };
+
+        // RGB Filter Sketch
+        const rgbFilterSketch = (p) => {
+          let capture;
+          let currentFilter = 'none';
+          let redButton, greenButton, blueButton;
+          let buttonSize = 50;
+          let cameraInitialized = false;
+
+          p.setup = () => {
+            console.log("RGB Filter: setup");
+            const canvasWidth = window.innerWidth;
+            const canvasHeight = document.documentElement.clientHeight - 50;
+            p.createCanvas(canvasWidth, canvasHeight);
+            p.pixelDensity(p.displayDensity());
+            p.canvas.style.display = 'block';
+            p.canvas.style.margin = '0';
+
+            let constraints = {
+              video: {
+                facingMode: { exact: "environment" },
+                width: { ideal: 1280, min: 640 },
+                height: { ideal: 720, min: 480 }
+              },
+              audio: false
+            };
+
+            try {
+              capture = p.createCapture(constraints, function(stream) {
+                if (stream && stream.active) {
+                  console.log("RGB Filter camera resolution:", capture.width, "x", capture.height);
+                  cameraInitialized = true;
+                } else {
+                  console.error("RGB Filter: Camera stream not active");
+                  cameraInitialized = false;
+                  let fallbackConstraints = {
+                    video: { facingMode: { exact: "environment" } },
+                    audio: false
+                  };
+                  capture = p.createCapture(fallbackConstraints, function(fallbackStream) {
+                    if (fallbackStream && fallbackStream.active) {
+                      console.log("RGB Filter fallback camera resolution:", capture.width, "x", capture.height);
+                      cameraInitialized = true;
+                    } else {
+                      console.error("RGB Filter: Fallback camera stream not active");
+                      cameraInitialized = false;
+                    }
+                  });
+                  capture.hide();
+                }
+              });
+              p.capture = capture;
+              capture.hide();
+            } catch (err) {
+              console.error("RGB Filter: Error creating capture:", err);
+              cameraInitialized = false;
+            }
+
+            let totalButtonWidth = buttonSize * 3 + 40;
+            let startX = (p.width - totalButtonWidth) / 2;
+            let buttonY = p.height - buttonSize - 70;
+
+            redButton = p.createButton('');
+            redButton.style('background-color', 'red');
+            redButton.style('border-radius', '50%');
+            redButton.style('width', `${buttonSize}px`);
+            redButton.style('height', `${buttonSize}px`);
+            redButton.style('border', 'none');
+            redButton.position(startX, buttonY);
+            redButton.mousePressed(() => currentFilter = 'red');
+            p.redButton = redButton;
+
+            greenButton = p.createButton('');
+            greenButton.style('background-color', 'green');
+            greenButton.style('border-radius', '50%');
+            greenButton.style('width', `${buttonSize}px`);
+            greenButton.style('height', `${buttonSize}px`);
+            greenButton.style('border', 'none');
+            greenButton.position(startX + buttonSize + 20, buttonY);
+            greenButton.mousePressed(() => currentFilter = 'green');
+            p.greenButton = greenButton;
+
+            blueButton = p.createButton('');
+            blueButton.style('background-color', 'blue');
+            blueButton.style('border-radius', '50%');
+            blueButton.style('width', `${buttonSize}px`);
+            blueButton.style('height', `${buttonSize}px`);
+            blueButton.style('border', 'none');
+            blueButton.position(startX + (buttonSize + 20) * 2, buttonY);
+            blueButton.mousePressed(() => currentFilter = 'blue');
+            p.blueButton = blueButton;
+
+            console.log(`RGB Filter buttons positioned at y=${buttonY}`);
+
+            window.addEventListener('resize', () => {
+              p.windowResized();
+            });
+          };
+
+          p.draw = () => {
+            p.background(0);
+
+            if (!capture || !capture.loadedmetadata || !cameraInitialized) {
+              p.fill(255);
+              p.textSize(20);
+              p.textAlign(p.CENTER);
+              if (p.millis() > 15000) {
+                p.text("Error: Camera failed to load. Please check permissions or refresh the page.", p.width / 2, p.height / 2, p.width - 40);
+                if (capture && !cameraInitialized) {
+                  console.log("RGB Filter: Attempting to restart video stream");
+                  capture.remove();
+                  let constraints = {
+                    video: { facingMode: { exact: "environment" } },
+                    audio: false
+                  };
+                  capture = p.createCapture(constraints, function(stream) {
+                    if (stream && stream.active) {
+                      console.log("RGB Filter restart camera resolution:", capture.width, "x", capture.height);
+                      cameraInitialized = true;
+                    }
+                  });
+                  p.capture = capture;
+                  capture.hide();
+                }
+              } else {
+                p.text("Loading camera...", p.width / 2, p.height / 2);
+              }
+              return;
+            }
+
+            if (currentFilter === 'red') {
+              p.tint(255, 0, 0);
+            } else if (currentFilter === 'green') {
+              p.tint(0, 255, 0);
+            } else if (currentFilter === 'blue') {
+              p.tint(0, 0, 255);
+            } else {
+              p.noTint();
+            }
+
+            p.image(capture, 0, 0, p.width, p.height);
+          };
+
+          p.windowResized = () => {
+            console.log("RGB Filter: windowResized");
+            const canvasWidth = window.innerWidth;
+            const canvasHeight = document.documentElement.clientHeight - 50;
+            p.resizeCanvas(canvasWidth, canvasHeight);
+            let totalButtonWidth = buttonSize * 3 + 40;
+            let startX = (p.width - totalButtonWidth) / 2;
+            let buttonY = p.height - buttonSize - 70;
+            if (p.redButton) p.redButton.position(startX, buttonY);
+            if (p.greenButton) p.greenButton.position(startX + buttonSize + 20, buttonY);
+            if (p.blueButton) p.blueButton.position(startX + (buttonSize + 20) * 2, buttonY);
+            console.log(`RGB Filter buttons repositioned at y=${buttonY}`);
+          };
+
+          p.remove = () => {
+            console.log("RGB Filter: Removing sketch");
+            p.noLoop();
+            if (p.capture && p.capture.elt.srcObject) {
+              try {
+                const stream = p.capture.elt.srcObject;
+                const tracks = stream.getTracks();
+                tracks.forEach(track => {
+                  track.stop();
+                  console.log("RGB Filter video track stopped:", track.label);
+                });
+                p.capture.elt.srcObject = null;
+                console.log("RGB Filter video stream cleared");
+              } catch (err) {
+                console.error("Error stopping RGB Filter video stream:", err);
+              }
+            }
+            if (p.redButton) p.redButton.remove();
+            if (p.greenButton) p.greenButton.remove();
+            if (p.blueButton) p.blueButton.remove();
+            console.log("RGB Filter buttons removed");
+            p.remove();
+          };
+        };
+      });
+    </script>
+  </body>
+</html>
