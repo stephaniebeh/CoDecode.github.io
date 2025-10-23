@@ -2,11 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes"
+    />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
       html, body {
         margin: 0;
         padding: 0;
@@ -17,6 +32,9 @@
         flex-direction: column;
         align-items: center;
         background-color: #ffffff;
+        font-size: 15px;
+        font-family: Rubik, Helvetica, sans-serif;
+        font-weight: 500;
       }
 
       #top-bar {
@@ -48,9 +66,10 @@
       }
 
       #view-log, #slit-scanner-btn, #magic-lens-btn, #home-btn {
-        padding: 8px 16px;
-        font-size: 14px;
-        font-family: Arial, sans-serif;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        margin: 0.2rem;
+        font-family: Rubik, Helvetica, sans-serif;
         background-color: #2196F3;
         color: white;
         border: none;
@@ -84,7 +103,7 @@
         padding: 10px;
         text-align: center;
         font-size: 16px;
-        font-family: Arial, sans-serif;
+        font-family: Rubik, Helvetica, sans-serif;
         background-color: #f0f0f0;
         border-radius: 5px;
         word-break: break-all;
@@ -106,11 +125,38 @@
         color: #003366;
       }
 
+      #hint-box {
+        display: none;
+        width: 90%;
+        max-width: 600px;
+        padding: 10px;
+        text-align: center;
+        font-size: 16px;
+        font-family: Rubik, Helvetica, sans-serif;
+        background-color: #e0f7fa;
+        border-radius: 5px;
+        word-break: break-all;
+        z-index: 10;
+        position: absolute;
+        top: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #000000;
+        animation: fadeInOut 5s ease-in-out;
+      }
+
+      @keyframes fadeInOut {
+        0% { opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+
       #qr-log {
         display: none;
         width: 90%;
         max-width: 600px;
-        padding: 20px;
+        padding: 30px 20px 20px; /* Increased top padding for close button */
         background-color: #ffffff;
         border: 1px solid #ccc;
         border-radius: 5px;
@@ -147,13 +193,15 @@
         margin-bottom: 5px;
         background-color: #f9f9f9;
         border-radius: 3px;
-        word-break: break-all;
         font-size: 14px;
       }
 
       .log-text {
-        flex-grow: 1;
-        margin-right: 10px;
+        flex: 1 1 70%; /* Allocate 70% of space to text */
+        margin-right: 8px;
+        word-break: normal; /* Prevent breaking within words */
+        overflow-wrap: break-word; /* Wrap words to next line */
+        white-space: normal; /* Allow text wrapping */
       }
 
       .log-text a {
@@ -167,7 +215,7 @@
       }
 
       .reorder-btn {
-        padding: 5px 8px;
+        padding: 5px;
         font-size: 12px;
         margin-right: 5px;
         border: none;
@@ -175,7 +223,10 @@
         cursor: pointer;
         background-color: #2196F3;
         color: white;
-        min-width: 30px;
+        min-width: 24px; /* Reduced width for buttons */
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
       }
 
       .reorder-btn:disabled {
@@ -184,26 +235,29 @@
       }
 
       .delete-btn {
-        padding: 5px 8px;
+        padding: 5px;
         font-size: 12px;
         border: none;
         border-radius: 3px;
         cursor: pointer;
         background-color: #f44336;
         color: white;
-        min-width: 60px;
+        min-width: 50px; /* Slightly reduced width */
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
       }
 
       #qr-log .button-container {
         display: flex;
-        justify-content: space-between;
+        justify-content: center; /* Center the clear button */
         margin-top: 10px;
       }
 
       #clear-log {
         padding: 8px 16px;
         font-size: 14px;
-        font-family: Arial, sans-serif;
+        font-family: Rubik, Helvetica, sans-serif;
         background-color: #f44336;
         color: white;
         border: none;
@@ -216,18 +270,27 @@
       }
 
       #close-log {
-        padding: 8px 16px;
-        font-size: 14px;
-        font-family: Arial, sans-serif;
-        background-color: #2196F3;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #f44336;
         color: white;
         border: none;
-        border-radius: 5px;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+        line-height: 30px;
+        text-align: center;
         cursor: pointer;
+        font-family: Rubik, Helvetica, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       #close-log:hover {
-        background-color: #1e87db;
+        background-color: #da190b;
       }
 
       #slit-scanner-page, #rgb-filter-page, #lock-page {
@@ -270,6 +333,7 @@
         max-width: 90%;
         max-height: 90%;
         object-fit: contain;
+        touch-action: pinch-zoom;
       }
 
       #image-popup-close {
@@ -280,13 +344,17 @@
         color: white;
         border: none;
         border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        font-size: 16px;
-        line-height: 30px;
-        text-align: center;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        font-family: Rubik, Helvetica, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
         cursor: pointer;
         z-index: 31;
+        transition: background-color 0.3s ease;
       }
 
       #image-popup-close:hover {
@@ -352,7 +420,7 @@
       #lock-cancel {
         padding: 8px 16px;
         font-size: 14px;
-        font-family: Arial, sans-serif;
+        font-family: Rubik, Helvetica, sans-serif;
         background-color: #f44336;
         color: white;
         border: none;
@@ -384,6 +452,89 @@
       #lock-popup-close:hover {
         background-color: #da190b;
       }
+
+      #html5-qrcode-anchor-scan-type-change {
+        display: none !important;
+      }
+
+      button {
+        background: none;
+        border: none;
+        padding: 1rem;
+        margin: 1rem;
+        font-size: 1rem;
+        font-family: Rubik, Helvetica, sans-serif;
+        border-radius: 0.5rem;
+        background: linear-gradient(70deg, #FF0088 0%, #FFCC00 100%);
+        color: white;
+      }
+
+      button#qr-result {
+        font-weight: 200;
+      }
+
+      button#slit-scanner-btn {
+        background: linear-gradient(70deg, #006622 0%, #FFCC00 100%);
+      }
+
+      button#html5-qrcode-button-torch {
+        background: black;
+        color: white;
+      }
+
+      #qr-reader__dashboard {
+        position: fixed;
+        box-sizing: border-box;
+        bottom: 0;
+        left: 0;
+        margin: 1rem;
+        width: calc(100vw - 2rem) !important;
+        background: #EEE;
+        border-radius: 1rem;
+        height: 10rem;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      #qr-reader__dashboard .button {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        max-width: 600px;
+      }
+
+      #html5-qrcode-button-camera-stop, #html5-qrcode-button-torch {
+        flex: 1;
+        max-width: 45%;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        font-family: Rubik, sans-serif;
+        background: linear-gradient(70deg, #FF0088 0%, #FFCC00 100%);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      #html5-qrcode-button-torch {
+        background: black;
+      }
+
+      #html5-qrcode-button-camera-stop:hover, #html5-qrcode-button-torch:hover {
+        opacity: 0.9;
+      }
+
+      img[src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNzEuNjQzIDM3MS42NDMiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDM3MS42NDMgMzcxLjY0MyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHBhdGggZD0iTTEwNS4wODQgMzguMjcxaDE2My43Njh2MjBIMTA1LjA4NHoiLz48cGF0aCBkPSJNMzExLjU5NiAxOTAuMTg5Yy03LjQ0MS05LjM0Ny0xOC40MDMtMTYuMjA2LTMyLjc0My0yMC41MjJWMzBjMC0xNi41NDItMTMuNDU4LTMwLTMwLTMwSDEyNS4wODRjLTE2LjU0MiAwLTMwIDEzLjQ1OC0zMCAzMHYxMjAuMTQzaC04LjI5NmMtMTYuNTQyIDAtMzAgMTMuNDU4LTMwIDMwdjEuMzMzYTI5LjgwNCAyOS44MDQgMCAwIDAgNC42MDMgMTUuOTM5Yy03LjM0IDUuNDc0LTEyLjEwMyAxNC4yMjEtMTIuMTAzIDI0LjA2MXYxLjMzM2MwIDkuODQgNC43NjMgMTguNTg3IDEyLjEwMyAyNC4wNjJhMjkuODEgMjkuODEgMCAwIDAtNC42MDMgMTUuOTM4djEuMzMzYzAgMTYuNTQyIDEzLjQ1OCAzMCAzMCAzMGg4LjMyNGMuNDI3IDExLjYzMSA3LjUwMyAyMS41ODcgMTcuNTM0IDI2LjE3Ny45MzEgMTAuNTAzIDQuMDg0IDMwLjE4NyAxNC43NjggNDUuNTM3YTkuOTg4IDkuOTg4IDAgMCAwIDguMjE2IDQuMjg4IDkuOTU4IDkuOTU4IDAgMCAwIDUuNzA0LTEuNzkzYzQuNTMzLTMuMTU1IDUuNjUtOS4zODggMi40OTUtMTMuOTIxLTYuNzk4LTkuNzY3LTkuNjAyLTIyLjYwOC0xMC43Ni0zMS40aDgyLjY4NWMuMjcyLjQxNC41NDUuODE4LjgxNSAxLjIxIDMuMTQyIDQuNTQxIDkuMzcyIDUuNjc5IDEzLjkxMyAyLjUzNCA0LjU0Mi0zLjE0MiA1LjY3Ny05LjM3MSAyLjUzNS0xMy45MTMtMTEuOTE5LTE3LjIyOS04Ljc4Ny0zNS44ODQgOS41ODEtNTcuMDEyIDMuMDY3LTIuNjUyIDEyLjMwNy0xMS43MzIgMTEuMjE3LTI0LjAzMy0uODI4LTkuMzQzLTcuMTA5LTE3LjE5NC0xOC42NjktMjMuMzM3YTkuODU3IDkuODU3IDAgMCAwLTEuMDYxLS40ODZjLS40NjYtLjE4Mi0xMS40MDMtNC41NzktOS43NDEtMTUuNzA2IDEuMDA3LTYuNzM3IDE0Ljc2OC04LjI3MyAyMy43NjYtNy42NjYgMjMuMTU2IDEuNTY5IDM5LjY5OCA3LjgwMyA0Ny44MzYgMTguMDI2IDUuNzUyIDcuMjI1IDcuNjA3IDE2LjYyMyA1LjY3MyAyOC43MzMtLjQxMyAyLjU4NS0uODI0IDUuMjQxLTEuMjQ1IDcuOTU5LTUuNzU2IDM3LjE5NC0xMi45MTkgODMuNDgzLTQ5Ljg3IDExNC42NjEtNC4yMjEgMy41NjEtNC43NTYgOS44Ny0xLjE5NCAxNC4wOTJhOS45OCA5Ljk4IDAgMCAwIDcuNjQ4IDMuNTUxIDkuOTU1IDkuOTU1IDAgMCAwIDYuNDQ0LTIuMzU4YzQyLjY3Mi0zNi4wMDUgNTAuODAyLTg4LjUzMyA1Ni43MzctMTI2Ljg4OC40MTUtMi42ODQuODIxLTUuMzA5IDEuMjI5LTcuODYzIDIuODM0LTE3LjcyMS0uNDU1LTMyLjY0MS05Ljc3Mi00NC4zNDV6bS0yMzIuMzA4IDQyLjYyYy01LjUxNCAwLTEwLTQuNDg2LTEwLTEwdi0xLjMzM2MwLTUuNTE0IDQuNDg2LTEwIDEwLTEwaDE1djIxLjMzM2gtMTV6bS0yLjUtNTIuNjY2YzAtNS41MTQgNC40ODYtMTAgMTAtMTBoNy41djIxLjMzM2gtNy41Yy01LjUxNCAwLTEwLTQuNDg2LTEwLTEwdi0xLjMzM3ptMTcuNSA5My45OTloLTcuNWMtNS41MTQgMC0xMC00LjQ4Ni0xMC0xMHYtMS4zMzNjMC01LjUxNCA0LjQ4Ni0xMCAxMC0xMGg3LjV2MjEuMzMzem0zMC43OTYgMjguODg3Yy01LjUxNCAwLTEwLTQuNDg2LTEwLTEwdi04LjI3MWg5MS40NTdjLS44NTEgNi42NjgtLjQzNyAxMi43ODcuNzMxIDE4LjI3MWgtODIuMTg4em03OS40ODItMTEzLjY5OGMtMy4xMjQgMjAuOTA2IDEyLjQyNyAzMy4xODQgMjEuNjI1IDM3LjA0IDUuNDQxIDIuOTY4IDcuNTUxIDUuNjQ3IDcuNzAxIDcuMTg4LjIxIDIuMTUtMi41NTMgNS42ODQtNC40NzcgNy4yNTEtLjQ4Mi4zNzgtLjkyOS44LTEuMzM1IDEuMjYxLTYuOTg3IDcuOTM2LTExLjk4MiAxNS41Mi0xNS40MzIgMjIuNjg4aC05Ny41NjRWMzBjMC01LjUxNCA0LjQ4Ni0xMCAxMC0xMGgxMjMuNzY5YzUuNTE0IDAgMTAgNC40ODYgMTAgMTB2MTM1LjU3OWMtMy4wMzItLjM4MS02LjE1LS42OTQtOS4zODktLjkxNC0yNS4xNTktMS42OTQtNDIuMzcgNy43NDgtNDQuODk4IDI0LjY2NnoiLz48cGF0aCBkPSJNMTc5LjEyOSA4My4xNjdoLTI0LjA2YTUgNSAwIDAgMC01IDV2MjQuMDYxYTUgNSAwIDAgMCA1IDVoMjQuMDZhNSA1IDAgMCAwIDUtNVY4OC4xNjdhNSA1IDAgMCAwLTUtNXpNMTcyLjYyOSAxNDIuODZoLTEyLjU2VjEzMC44YTUgNSAwIDEgMC0xMCAwdjE3LjA2MWE1IDUgMCAwIDAgNSA1aDE3LjU2YTUgNSAwIDEgMCAwLTEwLjAwMXpNMjE2LjU2OCA4My4xNjdoLTI0LjA2YTUgNSAwIDAgMC01IDV2MjQuMDYxYTUgNSAwIDAgMCA1IDVoMjQuMDZhNSA1IDAgMCAwIDUtNVY4OC4xNjdhNSA1IDAgMCAwLTUtNXptLTUgMjQuMDYxaC0xNC4wNlY5My4xNjdoMTQuMDZ2MTQuMDYxek0yMTEuNjY5IDEyNS45MzZIMTk3LjQxYTUgNSAwIDAgMC01IDV2MTQuMjU3YTUgNSAwIDAgMCA1IDVoMTQuMjU5YTUgNSAwIDAgMCA1LTV2LTE0LjI1N2E1IDUgMCAwIDAtNS01eiIvPjwvc3ZnPg=="] {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -394,17 +545,20 @@
       </div>
       <div id="right-buttons">
         <button id="magic-lens-btn" style="display: none;">Magic Lens</button>
-        <button id="slit-scanner-btn" style="display: none;">Slit Scanner</button>
+        <button id="slit-scanner-btn" style="display: none;">
+          Slit Scanner
+        </button>
       </div>
     </div>
     <div id="qr-reader"></div>
     <div id="qr-result" class="qr-result"></div>
+    <div id="hint-box" class="hint-box"></div>
     <div id="qr-log" class="qr-log" style="display: none;">
-      <h2>QR Code Log</h2>
+      <h2>Code Log</h2>
+      <button id="close-log">x</button>
       <ul id="log-list"></ul>
       <div class="button-container">
         <button id="clear-log">Clear Log</button>
-        <button id="close-log">Close</button>
       </div>
     </div>
     <div id="image-popup" style="display: none;">
@@ -431,6 +585,14 @@
       </div>
     </div>
     <script>
+      // Your existing JavaScript code remains unchanged
+      const config = {
+        fps: 10,
+        qrbox: Math.min(window.innerWidth * 0.8, 250),
+        showTorchButtonIfSupported: true,
+        rememberLastUsedCamera: true,
+      };
+
       document.addEventListener("DOMContentLoaded", function () {
         console.log("DOM loaded, initializing app");
 
@@ -440,6 +602,7 @@
         console.log("localStorage cleared for qrLog and unlockedTools");
 
         const resultDiv = document.getElementById("qr-result");
+        const hintBox = document.getElementById("hint-box");
         const viewLogButton = document.getElementById("view-log");
         const logDiv = document.getElementById("qr-log");
         const logList = document.getElementById("log-list");
@@ -461,10 +624,10 @@
         const lockCancelButton = document.getElementById("lock-cancel");
         const lockPopupClose = document.getElementById("lock-popup-close");
 
-        if (!resultDiv || !viewLogButton || !logDiv || !logList || 
-            !closeLogButton || !clearLogButton || !slitScannerButton || !magicLensButton || 
+        if (!resultDiv || !hintBox || !viewLogButton || !logDiv || !logList ||
+            !closeLogButton || !clearLogButton || !slitScannerButton || !magicLensButton ||
             !homeButton || !qrReader || !slitScannerPage || !rgbFilterPage || !lockPage ||
-            !imagePopup || !popupImage || !imagePopupClose || !confettiPopup || !confettiImage || 
+            !imagePopup || !popupImage || !imagePopupClose || !confettiPopup || !confettiImage ||
             !lockPopup || !lockCancelButton || !lockPopupClose) {
           console.error("Error: Missing DOM elements");
           return;
@@ -485,116 +648,193 @@
         let isShowingOpenLock = false;
         let lastTapTime = 0;
         const tapDebounceDelay = 200;
+        let currentHint = "Scan the big QR code by the entrance";
 
         // Initialize button visibility
         viewLogButton.style.display = "none";
         slitScannerButton.style.display = "none";
         magicLensButton.style.display = "none";
-        console.log("Initial state: qrLog=", qrLog, "unlockedTools=", unlockedTools);
+        console.log("Initial state: qrLog=", qrLog, "unlockedTools=", unlockedTools, "currentHint=", currentHint);
+
+        // Initialize torch button state
+        function initializeTorchButton() {
+          const torchButton = document.getElementById("html5-qrcode-button-torch");
+          if (torchButton) {
+            torchButton.classList.remove("html5-qrcode-element-button-torch-on");
+            console.log("Torch button initialized to off state");
+          }
+        }
 
         // QR code mappings
         const qrMappings = {
+          "Drawers keep secrets": {
+            fullText: "1: Drawers keep secrets",
+            text: "Drawers keep secrets",
+            hint: "Barcodes require an uninterrupted line of code"
+          },
+          "Where are we?": {
+            fullText: "1: Where are we?",
+            text: "Where are we?",
+            hint: "Find the directory"
+          },
+          "Vinyl": {
+            fullText: "1: Vinyl",
+            text: "Vinyl",
+            linkText: "Vinyl",
+            image: "img/vinyl.png",
+            hint: "Scan the vinyl"
+          },
           "1234": {
+            fullText: "1: 1234",
+            text: "New Room Unlocked! Unfold to reveal the next room",
             room: true,
-            messages: {
-              1: "The door unlocks, unfold to reveal the room",
-              2: "The door unlocks, unfold to proceed",
-              3: "You are nearing the end"
-            }
+            hint: "Physically unfold the poster"
           },
-          "1605": {
-            text: "Home by Kit Chan",
-            linkText: "Home",
-            image: "img/1605.png"
+          "22": {
+            fullText: "2: 22",
+            text: "Slit",
+            linkText: "New Tool Unlocked!: Slit Scanner",
+            tool: "Slit Scanner",
+            hint: "Watch your step, work with your tools and friends"
           },
-          "0330": {
-            text: "Hello by Adele",
-            linkText: "Hello",
-            image: "img/0330.png"
+          "Bk": {
+            fullText: "2: Bk",
+            text: "Book",
+            linkText: "Book",
+            image: "img/book.png",
+            hint: "Pull out those books"
           },
-          "0405": {
-            text: "Meet Me in Amsterdam by RINI",
-            linkText: "Meet Me in Amsterdam",
-            image: "img/0405.png"
+          "Wall": {
+            fullText: "2: Wall",
+            text: "Wall",
+            linkText: "Wall",
+            image: "img/wall.png",
+            hint: "Scan the wall"
           },
-          "New Tool Unlocked!: Slit Scanner": {
-            text: "New Tool Unlocked!: Slit Scanner",
-            linkText: "Slit Scanner",
-            tool: "Slit Scanner"
-          },
-          "RGB": {
-            text: "New Tool Unlocked!: Slit Scanner",
-            linkText: "Slit Scanner",
-            tool: "Slit Scanner"
-          },
-          "New Tool Unlocked!: Magic Lens": {
+          "R": {
+            fullText: "2: R",
             text: "New Tool Unlocked!: Magic Lens",
             linkText: "Magic Lens",
-            tool: "Magic Lens"
+            tool: "Magic Lens",
+            hint: "See red, there are layers in the floor"
+          },
+          "1234_2": {
+            fullText: "2: 1234",
+            text: "New Room Unlocked! Unfold to reveal the next room",
+            room: true,
+            hint: "Follow the footsteps"
+          },
+          "33": {
+            fullText: "3: 33",
+            text: "Find Me",
+            linkText: "Find Me",
+            image: "img/person.png",
+            hint: "Follow the gaze of this person"
+          },
+          "31061602170": {
+            fullText: "3: 31061602170",
+            text: "31061602170",
+            hint: "Return to room 1 and scan the lock QR code"
           },
           "Lock": {
-            text: "Confidential",
-            action: "showLock"
+            fullText: "1: Lock",
+            text: "Lock",
+            action: "showLock",
+            hint: "A long string on the floor"
+          },
+          "Hint": {
+            fullText: "Hint",
+            text: "",
+            action: "showHint"
+          },
+          "RR": {
+            fullText: "2: RR",
+            text: "Click me!",
+            linkText: "Click me!",
+            url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            hint: currentHint
           }
         };
 
         // Parse QR text
         function parseQRText(text) {
           console.log(`Parsing QR text: '${text}'`);
-          const cleaned = text.replace(/^\d+: */, '').replace(/#[\d]+/, '').trim();
-          console.log(`Cleaned text: '${cleaned}'`);
           const match = text.match(/^(\d+): *(.*)$/);
-          const room = match ? parseInt(match[1]) : 1;
-          console.log(`Parsed: room=${room}, content='${cleaned}'`);
-          return { room, content: cleaned };
+          let room = match ? parseInt(match[1]) : 1;
+          let content = match ? match[2] : text;
+          content = content.replace(/#[0-9]+/, '').trim();
+          if (content === "1234" && room === 2) {
+            content = "1234_2";
+          }
+          console.log(`Parsed: room=${room}, content='${content}'`);
+          return { room, content };
         }
 
         // Format text for display
-        function formatText(text, forLog = false) {
-          if (qrMappings.hasOwnProperty(text)) {
-            const mapping = qrMappings[text];
+        function formatText(fullText, content, forLog = false) {
+          if (qrMappings.hasOwnProperty(content)) {
+            const mapping = qrMappings[content];
+            const displayText = forLog ? mapping.fullText : mapping.text;
             if (mapping.room) {
-              return mapping.messages[unlockedRoom] || "You are nearing the end";
+              return mapping.text;
+            }
+            if (mapping.url) {
+              return displayText.replace(
+                mapping.linkText,
+                `<a href="${mapping.url}" target="_blank" rel="noopener noreferrer">${mapping.linkText}</a>`
+              );
             }
             if (mapping.image && forLog) {
-              return mapping.text.replace(
+              return displayText.replace(
                 mapping.linkText,
                 `<a href="#" class="image-link" data-image="${mapping.image}">${mapping.linkText}</a>`
               );
             }
             return mapping.text;
           }
-          return text.replace(/\b(https?:\/\/[^\s]+|www\.[^\s]+)/gi, function(url) {
+          const displayText = forLog ? fullText : content;
+          return displayText.replace(/\b(https?:\/\/[^\s]+|www\.[^\s]+)/gi, function(url) {
             const href = url.match(/^https?:\/\//) ? url : `https://${url}`;
             return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
           });
         }
 
+        // Show hint box
+        function showHintBox(hintText) {
+          console.log(`Showing hint: ${hintText}`);
+          hintBox.innerHTML = hintText;
+          hintBox.style.display = "block";
+          hintBox.offsetHeight;
+          setTimeout(() => {
+            hintBox.style.display = "none";
+            console.log("Hint box hidden");
+          }, 5000);
+        }
+
         // Show image pop-up
         function showImagePopup(imageSrc, isOpenLock = false) {
-          console.log(`Attempting to show image pop-up: ${imageSrc}, isOpenLock=${isOpenLock}`);
+          console.log(`Showing image pop-up: ${imageSrc}, isOpenLock=${isOpenLock}`);
           popupImage.src = imageSrc;
           imagePopup.style.display = "flex";
-          imagePopup.offsetHeight; // Force DOM reflow
+          imagePopup.offsetHeight;
           isShowingOpenLock = isOpenLock;
-          // Show/hide close button based on image
           if (imageSrc.includes("openlock.png") || imageSrc.includes("openlockcloseup.png")) {
             imagePopupClose.style.display = "none";
-            console.log("Hiding image pop-up close button for", imageSrc);
+            console.log("Hiding close button for", imageSrc);
           } else {
             imagePopupClose.style.display = "block";
-            console.log("Showing image pop-up close button for", imageSrc);
+            console.log("Showing close button for", imageSrc);
           }
-          console.log("Image pop-up display set to flex, style.display:", imagePopup.style.display, "image src:", popupImage.src);
+          console.log("Image pop-up displayed, style.display:", imagePopup.style.display, "image src:", popupImage.src);
         }
 
         // Show confetti pop-up
         function showConfettiPopup() {
-          console.log("Attempting to show confetti pop-up: img/confetti.gif");
+          console.log("Showing confetti pop-up: img/confetti.gif");
           confettiImage.src = "img/confetti.gif";
           confettiPopup.style.display = "flex";
-          confettiPopup.offsetHeight; // Force DOM reflow
-          console.log("Confetti pop-up display set to flex, style.display:", confettiPopup.style.display, "image src:", confettiImage.src);
+          confettiPopup.offsetHeight;
+          console.log("Confetti pop-up displayed, style.display:", confettiPopup.style.display);
           setTimeout(() => {
             console.log("Hiding confetti pop-up after 3 seconds");
             confettiPopup.style.display = "none";
@@ -617,16 +857,16 @@
           switchView("scanner");
         }
 
-        // Handle image pop-up click/touch
-        function handleImagePopupClick(e) {
+        // Handle lock image tap
+        function handleLockImageTap(e) {
           const currentTime = Date.now();
           if (currentTime - lastTapTime < tapDebounceDelay) {
-            console.log("Debouncing: Ignoring rapid tap on image pop-up");
+            console.log("Debouncing: Ignoring rapid tap on lock image");
             return;
           }
           lastTapTime = currentTime;
-          console.log("Image pop-up tapped, isShowingOpenLock:", isShowingOpenLock, "current image:", popupImage.src);
-          if (isShowingOpenLock) {
+          console.log("Lock image tapped, isShowingOpenLock:", isShowingOpenLock, "current image:", popupImage.src);
+          if (isShowingOpenLock && popupImage.src.includes("openlock.png")) {
             console.log("Switching from openlock.png to openlockcloseup.png");
             imagePopup.style.display = "none";
             popupImage.src = "";
@@ -636,23 +876,17 @@
           } else if (popupImage.src.includes("openlockcloseup.png")) {
             console.log("Closing openlockcloseup.png and returning to scanner");
             closeImageAndConfettiPopups();
-          } else {
-            console.log("Closing other image pop-up via tap");
-            closeImageAndConfettiPopups();
           }
         }
 
-        // Handle image pop-up close button click
+        popupImage.addEventListener("click", handleLockImageTap);
+        popupImage.addEventListener("touchstart", handleLockImageTap);
+
         imagePopupClose.addEventListener("click", () => {
           console.log("Image pop-up close button clicked");
           closeImageAndConfettiPopups();
         });
 
-        // Add click and touch event listeners for image pop-up
-        imagePopup.addEventListener("click", handleImagePopupClick);
-        imagePopup.addEventListener("touchstart", handleImagePopupClick);
-
-        // Stop QR scanner stream
         function stopQRScannerStream() {
           if (html5QrcodeScanner) {
             try {
@@ -676,7 +910,6 @@
           }
         }
 
-        // Clean up p5.js canvases
         function cleanUpCanvases() {
           console.log("Cleaning up canvases");
           const slitCanvas = slitScannerPage.querySelector('canvas');
@@ -701,7 +934,7 @@
           }
         }
 
-        // Switch views
+        // ✅ FIXED switchView function
         function switchView(view) {
           if (currentView === view) {
             console.log(`Already in view: ${view}`);
@@ -749,6 +982,7 @@
 
           qrReader.style.display = view === "scanner" ? "block" : "none";
           resultDiv.style.display = view === "scanner" ? "block" : "none";
+          resultDiv.innerHTML = "";  // ✅ FIX: Clear any leftover text
           slitScannerPage.style.display = view === "slit-scanner" ? "flex" : "none";
           rgbFilterPage.style.display = view === "rgb-filter" ? "flex" : "none";
           lockPage.style.display = view === "lock" ? "flex" : "none";
@@ -763,15 +997,11 @@
             console.log("Initializing QR scanner");
             setTimeout(() => {
               try {
-                html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", {
-                  fps: 10,
-                  qrbox: Math.min(window.innerWidth * 0.8, 250),
-                  facingMode: "environment",
-                  cameraId: selectedCameraId
-                });
+                html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config);
                 html5QrcodeScanner.render(onScanSuccess, onScanError, (cameraId) => {
                   selectedCameraId = cameraId;
                   console.log("Selected camera ID:", selectedCameraId);
+                  initializeTorchButton();
                 });
                 console.log("QR scanner initialized");
               } catch (err) {
@@ -792,20 +1022,18 @@
           }
         }
 
-        // Store QR code in log
-        function storeQRCode(qrText) {
+        function storeQRCode(fullText) {
           qrLog = JSON.parse(localStorage.getItem("qrLog") || "[]");
-          qrLog.push({ text: qrText });
+          qrLog.push({ text: fullText });
           localStorage.setItem("qrLog", JSON.stringify(qrLog));
-          console.log("Stored QR:", qrText, "New qrLog:", qrLog);
+          console.log("Stored QR:", fullText, "New qrLog:", qrLog);
           viewLogButton.style.display = "block";
         }
 
-        // Show lock pop-up
         function showLockPopup() {
           console.log("Attempting to show lock pop-up");
           lockPopup.style.display = "flex";
-          lockPopup.offsetHeight; // Force DOM reflow
+          lockPopup.offsetHeight;
           console.log("Lock pop-up display set to flex, style.display:", lockPopup.style.display);
           if (!lockInstance) {
             console.log("Initializing lock sketch in lock-canvas-container");
@@ -816,7 +1044,6 @@
           }
         }
 
-        // Close lock pop-up
         function closeLockPopup() {
           console.log("Closing lock pop-up");
           lockPopup.style.display = "none";
@@ -839,7 +1066,6 @@
         lockCancelButton.addEventListener("click", closeLockPopup);
         lockPopupClose.addEventListener("click", closeLockPopup);
 
-        // QR scan handler
         function onScanSuccess(decodedText, decodedResult) {
           if (isProcessingScan || decodedText === lastScanText) {
             console.log(`Debouncing: Ignoring scan of '${decodedText}' (isProcessingScan: ${isProcessingScan})`);
@@ -858,6 +1084,14 @@
             clearTextTimer = null;
           }
 
+          if (content === "Hint") {
+            console.log("Hint QR code scanned, displaying current hint:", currentHint);
+            showHintBox(currentHint);
+            isProcessingScan = false;
+            lastScanText = null;
+            return;
+          }
+
           if (room > unlockedRoom) {
             console.log(`Room ${room} locked, displaying 'To be unlocked'`);
             resultDiv.innerHTML = "To be unlocked";
@@ -871,79 +1105,50 @@
             return;
           }
 
-          if (content === '1234') {
-            let message = qrMappings["1234"].messages[room] || "You are nearing the end";
-            console.log(`Key detected: room=${room}, displaying message='${message}'`);
-            resultDiv.innerHTML = message;
+          if (qrMappings.hasOwnProperty(content)) {
+            const mapping = qrMappings[content];
+            resultDiv.innerHTML = formatText(decodedText, content);
             resultDiv.style.display = "block";
-            storeQRCode(content);
-            if (room === unlockedRoom) {
+            storeQRCode(decodedText);
+            if (mapping.hint) {
+              currentHint = mapping.hint;
+              console.log(`Updated currentHint to: ${currentHint}`);
+            }
+
+            if (mapping.room && room === unlockedRoom) {
               unlockedRoom = room + 1;
               console.log(`Updated unlockedRoom to ${unlockedRoom}`);
             }
-            clearTextTimer = setTimeout(() => {
-              resultDiv.style.display = "none";
-              resultDiv.innerHTML = "";
-              isProcessingScan = false;
-              lastScanText = null;
-            }, 3000);
-            return;
-          }
 
-          if (content === "New Tool Unlocked!: Slit Scanner" || content === "RGB" || content === "New Tool Unlocked!: Magic Lens") {
-            const tool = qrMappings[content].tool;
-            console.log(`Unlocking tool: ${tool}`);
-            unlockedTools[tool] = true;
-            localStorage.setItem("unlockedTools", JSON.stringify(unlockedTools));
-            slitScannerButton.style.display = unlockedTools["Slit Scanner"] ? "block" : "none";
-            magicLensButton.style.display = unlockedTools["Magic Lens"] ? "block" : "none";
-            resultDiv.innerHTML = formatText(content);
-            resultDiv.style.display = "block";
-            storeQRCode(content);
-            clearTextTimer = setTimeout(() => {
-              resultDiv.style.display = "none";
-              resultDiv.innerHTML = "";
-              isProcessingScan = false;
-              lastScanText = null;
-            }, 3000);
-            return;
-          }
-
-          if (content === "Lock") {
-            console.log("Lock QR code scanned: displaying 'Confidential' and triggering lock pop-up");
-            resultDiv.innerHTML = formatText(content);
-            resultDiv.style.display = "block";
-            storeQRCode(content);
-            showLockPopup();
-            clearTextTimer = setTimeout(() => {
-              resultDiv.style.display = "none";
-              resultDiv.innerHTML = "";
-            }, 3000);
-            return;
-          }
-
-          if (qrMappings.hasOwnProperty(content) && qrMappings[content].image) {
-            console.log(`Image QR code: displaying text='${qrMappings[content].text}', image='${qrMappings[content].image}'`);
-            resultDiv.innerHTML = formatText(content);
-            resultDiv.style.display = "block";
-            storeQRCode(content);
-            showImagePopup(qrMappings[content].image);
-            // Only set timer for non-persistent images (e.g., exclude 0330, 0405, 1605)
-            if (content !== "0330" && content !== "0405" && content !== "1605") {
-              clearTextTimer = setTimeout(() => {
-                resultDiv.style.display = "none";
-                resultDiv.innerHTML = "";
-                isProcessingScan = false;
-                lastScanText = null;
-              }, 3000);
+            if (mapping.tool) {
+              console.log(`Unlocking tool: ${mapping.tool}`);
+              unlockedTools[mapping.tool] = true;
+              localStorage.setItem("unlockedTools", JSON.stringify(unlockedTools));
+              slitScannerButton.style.display = unlockedTools["Slit Scanner"] ? "block" : "none";
+              magicLensButton.style.display = unlockedTools["Magic Lens"] ? "block" : "none";
             }
+
+            if (mapping.action === "showLock") {
+              console.log("Lock QR code scanned: triggering lock pop-up");
+              showLockPopup();
+            } else if (mapping.image) {
+              console.log(`Image QR code: displaying image='${mapping.image}'`);
+              showImagePopup(mapping.image);
+            }
+
+            clearTextTimer = setTimeout(() => {
+              resultDiv.style.display = "none";
+              resultDiv.innerHTML = "";
+              isProcessingScan = false;
+              lastScanText = null;
+            }, 3000);
             return;
           }
 
-          console.log(`Non-key code: displaying content='${content}'`);
-          resultDiv.innerHTML = formatText(content);
+          console.log(`Non-mapped code: displaying content='${content}'`);
+          resultDiv.innerHTML = formatText(decodedText, content);
           resultDiv.style.display = "block";
-          storeQRCode(content);
+          storeQRCode(decodedText);
           clearTextTimer = setTimeout(() => {
             resultDiv.style.display = "none";
             resultDiv.innerHTML = "";
@@ -957,7 +1162,6 @@
           isProcessingScan = false;
         }
 
-        // Log management
         function populateLog(qrLog) {
           logList.innerHTML = "";
           if (qrLog.length === 0) {
@@ -968,12 +1172,13 @@
 
           qrLog.slice().reverse().forEach((entry, reverseIndex) => {
             const index = qrLog.length - 1 - reverseIndex;
+            const parsed = parseQRText(entry.text);
             const li = document.createElement("li");
             li.setAttribute("data-index", index);
 
             const textSpan = document.createElement("span");
             textSpan.className = "log-text";
-            textSpan.innerHTML = formatText(entry.text, true);
+            textSpan.innerHTML = formatText(entry.text, parsed.content, true);
 
             const upBtn = document.createElement("button");
             upBtn.className = "reorder-btn up-btn";
@@ -1053,27 +1258,26 @@
           logDiv.style.display = "none";
         });
 
-        slitScannerButton.addEventListener("click", () => switchView("slit-scanner"));
-        magicLensButton.addEventListener("click", () => switchView("rgb-filter"));
+        // ✅ FIXED homeButton click handler
         homeButton.addEventListener("click", () => {
           console.log("Home button clicked");
           closeImageAndConfettiPopups();
+          resultDiv.innerHTML = "";  // ✅ FIX: Clear result div
+          resultDiv.style.display = "none";  // ✅ FIX: Hide result div
         });
 
+        slitScannerButton.addEventListener("click", () => switchView("slit-scanner"));
+        magicLensButton.addEventListener("click", () => switchView("rgb-filter"));
+
         console.log("Starting initial view: scanner");
-        const config = {
-          fps: 10,
-          qrbox: Math.min(window.innerWidth * 0.8, 250),
-          facingMode: "environment"
-        };
         html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config);
         html5QrcodeScanner.render(onScanSuccess, onScanError, (cameraId) => {
           selectedCameraId = cameraId;
           console.log("Selected camera ID:", selectedCameraId);
+          initializeTorchButton();
         });
         console.log("QR scanner initialized");
 
-        // Lock Sketch
         const lockSketch = (p) => {
           let passcode = "1234";
           let successMessage = "Access Granted!";
@@ -1167,7 +1371,7 @@
                 enteredCode += digit;
               }
             } else {
-              if (p.mouseX > x - 40 * scaleFactor && p.mouseX < x + 40 * scaleFactor && 
+              if (p.mouseX > x - 40 * scaleFactor && p.mouseX < x + 40 * scaleFactor &&
                   p.mouseY > y - 40 * scaleFactor && p.mouseY < y + 40 * scaleFactor) {
                 enteredCode += digit;
               }
@@ -1221,7 +1425,6 @@
           };
         };
 
-        // Slit Scanner Sketch
         const slitScannerSketch = (p) => {
           let video;
           let scan;
@@ -1357,7 +1560,6 @@
           };
         };
 
-        // RGB Filter Sketch
         const rgbFilterSketch = (p) => {
           let capture;
           let currentFilter = 'none';
@@ -1414,12 +1616,14 @@
               cameraInitialized = false;
             }
 
-            let totalButtonWidth = buttonSize * 3 + 40;
-            let startX = (p.width - totalButtonWidth) / 2;
-            let buttonY = p.height - buttonSize - 70;
+            // ✅ FIXED button positioning
+            const buttonSpacing = 30;
+            const totalButtonsWidth = buttonSize * 3 + buttonSpacing * 2;
+            const startX = (p.width - totalButtonsWidth) / 2 - (buttonSize / 2);  // Shift left by radius
+            const buttonY = p.height - buttonSize - 70;
 
             redButton = p.createButton('');
-            redButton.style('background-color', 'red');
+            redButton.style('background', 'red');
             redButton.style('border-radius', '50%');
             redButton.style('width', `${buttonSize}px`);
             redButton.style('height', `${buttonSize}px`);
@@ -1429,22 +1633,22 @@
             p.redButton = redButton;
 
             greenButton = p.createButton('');
-            greenButton.style('background-color', 'green');
+            greenButton.style('background', 'green');
             greenButton.style('border-radius', '50%');
             greenButton.style('width', `${buttonSize}px`);
             greenButton.style('height', `${buttonSize}px`);
             greenButton.style('border', 'none');
-            greenButton.position(startX + buttonSize + 20, buttonY);
+            greenButton.position(startX + buttonSize + buttonSpacing, buttonY);
             greenButton.mousePressed(() => currentFilter = 'green');
             p.greenButton = greenButton;
 
             blueButton = p.createButton('');
-            blueButton.style('background-color', 'blue');
+            blueButton.style('background', 'blue');
             blueButton.style('border-radius', '50%');
             blueButton.style('width', `${buttonSize}px`);
             blueButton.style('height', `${buttonSize}px`);
             blueButton.style('border', 'none');
-            blueButton.position(startX + (buttonSize + 20) * 2, buttonY);
+            blueButton.position(startX + (buttonSize + buttonSpacing) * 2, buttonY);
             blueButton.mousePressed(() => currentFilter = 'blue');
             p.blueButton = blueButton;
 
@@ -1499,18 +1703,23 @@
             p.image(capture, 0, 0, p.width, p.height);
           };
 
+          // ✅ FIXED windowResized
           p.windowResized = () => {
             console.log("RGB Filter: windowResized");
             const canvasWidth = window.innerWidth;
             const canvasHeight = document.documentElement.clientHeight - 50;
             p.resizeCanvas(canvasWidth, canvasHeight);
-            let totalButtonWidth = buttonSize * 3 + 40;
-            let startX = (p.width - totalButtonWidth) / 2;
-            let buttonY = p.height - buttonSize - 70;
-            if (p.redButton) p.redButton.position(startX, buttonY);
-            if (p.greenButton) p.greenButton.position(startX + buttonSize + 20, buttonY);
-            if (p.blueButton) p.blueButton.position(startX + (buttonSize + 20) * 2, buttonY);
-            console.log(`RGB Filter buttons repositioned at y=${buttonY}`);
+            
+            const buttonSpacing = 30;
+            const totalButtonsWidth = buttonSize * 3 + buttonSpacing * 2;
+            const newStartX = (p.width - totalButtonsWidth) / 2 - (buttonSize / 2);  // Shift left by radius
+            const newButtonY = p.height - buttonSize - 70;
+            
+            if (p.redButton) p.redButton.position(newStartX, newButtonY);
+            if (p.greenButton) p.greenButton.position(newStartX + buttonSize + buttonSpacing, newButtonY);
+            if (p.blueButton) p.blueButton.position(newStartX + (buttonSize + buttonSpacing) * 2, newButtonY);
+            
+            console.log(`RGB Filter buttons repositioned at x=${newStartX}`);
           };
 
           p.remove = () => {
