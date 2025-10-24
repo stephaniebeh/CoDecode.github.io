@@ -341,6 +341,7 @@
         display: none;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         background-color: #000000;
         overflow: hidden;
         position: relative;
@@ -356,6 +357,53 @@
         top: 50px;
         left: 0;
       }
+      
+      #rgb-filter-page {
+  width: 100%;
+  height: 100vh;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #000000;
+  overflow: hidden;
+  position: relative;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); /* Respect safe areas */
+}
+
+#rgb-filter-canvas {
+  display: block;
+  width: 100vw;
+  max-width: 100%;
+  height: calc(100vh - 50px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); /* Adjust for top bar and safe areas */
+  object-fit: cover;
+  position: absolute;
+  top: calc(50px + env(safe-area-inset-top)); /* Account for top bar and safe area */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+}
+
+#rgb-button-container {
+  position: absolute;
+  bottom: 70px; /* Matches previous buttonY offset */
+  width: 100%;
+  display: flex;
+  justify-content: center; /* Center buttons horizontally */
+  gap: 10px; /* Matches buttonSpacing */
+  z-index: 10; /* Ensure buttons are above canvas */
+  padding: 0 10px; /* Prevent buttons from touching screen edges */
+  box-sizing: border-box;
+}
+
+/* Style for p5.js-generated buttons */
+.rgb-button-container button {
+  width: 50px; /* Matches buttonSize */
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+}
 
       #image-popup {
         display: none;
@@ -584,7 +632,6 @@
 
       }
 
-
       #html5-qrcode-button-camera-stop:hover, #html5-qrcode-button-torch:hover {
         opacity: 0.9;
       }
@@ -611,15 +658,14 @@
     <div id="qr-result" class="qr-result"></div>
     <div id="hint-box" class="hint-box"></div>
     <div id="qr-log" class="qr-log" style="display: none;">
-
       <h2>Code Log</h2>
       <ul id="log-list"></ul>
       <div class="button-container">
         <button id="clear-log">Clear Log</button>
       </div>
-              <button id="close-log">x</button>
+      <button id="close-log">x</button>
     </div>
-    <div id="qr-log-backdrop" style="display: none;"></div>  
+    <div id="qr-log-backdrop" style="display: none;"></div>
     <div id="image-popup" style="display: none;">
       <img id="popup-image" src="" alt="QR Image" />
       <button id="image-popup-close">x</button>
@@ -632,6 +678,7 @@
     </div>
     <div id="rgb-filter-page">
       <div id="rgb-filter-canvas"></div>
+      <div id="rgb-button-container" class="rgb-button-container"></div>
     </div>
     <div id="lock-page">
       <div id="lock-canvas"></div>
@@ -639,7 +686,6 @@
     <div id="lock-popup" style="display: none;">
       <button id="lock-popup-close">x</button>
       <div id="lock-canvas-container"></div>
-      </div>
     </div>
     <script>
       // Your existing JavaScript code remains unchanged
@@ -1656,191 +1702,188 @@
         };
 
         const rgbFilterSketch = (p) => {
-          let capture;
-          let currentFilter = 'none';
-          let redButton, greenButton, blueButton;
-          let buttonSize = 50;
-          let cameraInitialized = false;
+  let capture;
+  let currentFilter = 'none';
+  let redButton, greenButton, blueButton;
+  let buttonSize = 50;
+  let cameraInitialized = false;
 
-          p.setup = () => {
-            console.log("RGB Filter: setup");
-            const canvasWidth = window.innerWidth;
-            const canvasHeight = document.documentElement.clientHeight - 50;
-            p.createCanvas(canvasWidth, canvasHeight);
-            p.pixelDensity(p.displayDensity());
-            p.canvas.style.display = 'block';
-            p.canvas.style.margin = '0';
+  p.setup = () => {
+    console.log("RGB Filter: setup");
+    // Use clientWidth for accurate viewport width
+    const canvasWidth = document.documentElement.clientWidth;
+    const canvasHeight = document.documentElement.clientHeight - 50 - (parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)') || 0) + parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-bottom)') || 0));
+    p.createCanvas(canvasWidth, canvasHeight);
+    p.pixelDensity(p.displayDensity());
+    p.canvas.style.display = 'block';
+    p.canvas.style.margin = '0 auto'; // Center canvas in container
 
-            let constraints = {
-              video: {
-                facingMode: { exact: "environment" },
-                width: { ideal: 1280, min: 640 },
-                height: { ideal: 720, min: 480 }
-              },
-              audio: false
-            };
+    let constraints = {
+      video: {
+        facingMode: { exact: "environment" },
+        width: { ideal: 1280, min: 640 },
+        height: { ideal: 720, min: 480 }
+      },
+      audio: false
+    };
 
-            try {
-              capture = p.createCapture(constraints, function(stream) {
-                if (stream && stream.active) {
-                  console.log("RGB Filter camera resolution:", capture.width, "x", capture.height);
-                  cameraInitialized = true;
-                } else {
-                  console.error("RGB Filter: Camera stream not active");
-                  cameraInitialized = false;
-                  let fallbackConstraints = {
-                    video: { facingMode: { exact: "environment" } },
-                    audio: false
-                  };
-                  capture = p.createCapture(fallbackConstraints, function(fallbackStream) {
-                    if (fallbackStream && fallbackStream.active) {
-                      console.log("RGB Filter fallback camera resolution:", capture.width, "x", capture.height);
-                      cameraInitialized = true;
-                    } else {
-                      console.error("RGB Filter: Fallback camera stream not active");
-                      cameraInitialized = false;
-                    }
-                  });
-                  capture.hide();
-                }
-              });
-              p.capture = capture;
-              capture.hide();
-            } catch (err) {
-              console.error("RGB Filter: Error creating capture:", err);
+    try {
+      capture = p.createCapture(constraints, function(stream) {
+        if (stream && stream.active) {
+          console.log("RGB Filter camera resolution:", capture.width, "x", capture.height);
+          cameraInitialized = true;
+        } else {
+          console.error("RGB Filter: Camera stream not active");
+          cameraInitialized = false;
+          let fallbackConstraints = {
+            video: { facingMode: { exact: "environment" } },
+            audio: false
+          };
+          capture = p.createCapture(fallbackConstraints, function(fallbackStream) {
+            if (fallbackStream && fallbackStream.active) {
+              console.log("RGB Filter fallback camera resolution:", capture.width, "x", capture.height);
+              cameraInitialized = true;
+            } else {
+              console.error("RGB Filter: Fallback camera stream not active");
               cameraInitialized = false;
             }
+          });
+          capture.hide();
+        }
+      });
+      p.capture = capture;
+      capture.hide();
+    } catch (err) {
+      console.error("RGB Filter: Error creating capture:", err);
+      cameraInitialized = false;
+    }
 
-            // ✅ FIXED button positioning
-            const buttonSpacing = 30;
-            const totalButtonsWidth = buttonSize * 3 + buttonSpacing * 2;
-            const startX = (p.width - totalButtonsWidth) / 2 - (buttonSize / 2);  // Shift left by radius
-            const buttonY = p.height - buttonSize - 70;
+    // Create buttons and append to #rgb-button-container
+    const buttonContainer = document.getElementById('rgb-button-container');
+    if (!buttonContainer) {
+      console.error("RGB button container not found");
+      return;
+    }
 
-            redButton = p.createButton('');
-            redButton.style('background', 'red');
-            redButton.style('border-radius', '50%');
-            redButton.style('width', `${buttonSize}px`);
-            redButton.style('height', `${buttonSize}px`);
-            redButton.style('border', 'none');
-            redButton.position(startX, buttonY);
-            redButton.mousePressed(() => currentFilter = 'red');
-            p.redButton = redButton;
+    redButton = p.createButton('');
+    redButton.style('background', 'red');
+    redButton.style('border-radius', '50%');
+    redButton.style('width', `${buttonSize}px`);
+    redButton.style('height', `${buttonSize}px`);
+    redButton.style('border', 'none');
+    redButton.mousePressed(() => currentFilter = 'red');
+    p.redButton = redButton;
+    buttonContainer.appendChild(redButton.elt);
 
-            greenButton = p.createButton('');
-            greenButton.style('background', 'green');
-            greenButton.style('border-radius', '50%');
-            greenButton.style('width', `${buttonSize}px`);
-            greenButton.style('height', `${buttonSize}px`);
-            greenButton.style('border', 'none');
-            greenButton.position(startX + buttonSize + buttonSpacing, buttonY);
-            greenButton.mousePressed(() => currentFilter = 'green');
-            p.greenButton = greenButton;
+    greenButton = p.createButton('');
+    greenButton.style('background', 'green');
+    greenButton.style('border-radius', '50%');
+    greenButton.style('width', `${buttonSize}px`);
+    greenButton.style('height', `${buttonSize}px`);
+    greenButton.style('border', 'none');
+    greenButton.mousePressed(() => currentFilter = 'green');
+    p.greenButton = greenButton;
+    buttonContainer.appendChild(greenButton.elt);
 
-            blueButton = p.createButton('');
-            blueButton.style('background', 'blue');
-            blueButton.style('border-radius', '50%');
-            blueButton.style('width', `${buttonSize}px`);
-            blueButton.style('height', `${buttonSize}px`);
-            blueButton.style('border', 'none');
-            blueButton.position(startX + (buttonSize + buttonSpacing) * 2, buttonY);
-            blueButton.mousePressed(() => currentFilter = 'blue');
-            p.blueButton = blueButton;
+    blueButton = p.createButton('');
+    blueButton.style('background', 'blue');
+    blueButton.style('border-radius', '50%');
+    blueButton.style('width', `${buttonSize}px`);
+    blueButton.style('height', `${buttonSize}px`);
+    blueButton.style('border', 'none');
+    blueButton.mousePressed(() => currentFilter = 'blue');
+    p.blueButton = blueButton;
+    buttonContainer.appendChild(blueButton.elt);
 
-            console.log(`RGB Filter buttons positioned at y=${buttonY}`);
+    console.log("RGB Filter buttons appended to #rgb-button-container");
 
-            window.addEventListener('resize', () => {
-              p.windowResized();
-            });
+    // Debounce resize events
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        p.windowResized();
+      }, 100); // Debounce by 100ms
+    });
+  };
+
+  p.draw = () => {
+    p.background(0);
+
+    if (!capture || !capture.loadedmetadata || !cameraInitialized) {
+      p.fill(255);
+      p.textSize(20);
+      p.textAlign(p.CENTER);
+      if (p.millis() > 15000) {
+        p.text("Error: Camera failed to load. Please check permissions or refresh the page.", p.width / 2, p.height / 2, p.width - 40);
+        if (capture && !cameraInitialized) {
+          console.log("RGB Filter: Attempting to restart video stream");
+          capture.remove();
+          let constraints = {
+            video: { facingMode: { exact: "environment" } },
+            audio: false
           };
-
-          p.draw = () => {
-            p.background(0);
-
-            if (!capture || !capture.loadedmetadata || !cameraInitialized) {
-              p.fill(255);
-              p.textSize(20);
-              p.textAlign(p.CENTER);
-              if (p.millis() > 15000) {
-                p.text("Error: Camera failed to load. Please check permissions or refresh the page.", p.width / 2, p.height / 2, p.width - 40);
-                if (capture && !cameraInitialized) {
-                  console.log("RGB Filter: Attempting to restart video stream");
-                  capture.remove();
-                  let constraints = {
-                    video: { facingMode: { exact: "environment" } },
-                    audio: false
-                  };
-                  capture = p.createCapture(constraints, function(stream) {
-                    if (stream && stream.active) {
-                      console.log("RGB Filter restart camera resolution:", capture.width, "x", capture.height);
-                      cameraInitialized = true;
-                    }
-                  });
-                  p.capture = capture;
-                  capture.hide();
-                }
-              } else {
-                p.text("Loading camera...", p.width / 2, p.height / 2);
-              }
-              return;
+          capture = p.createCapture(constraints, function(stream) {
+            if (stream && stream.active) {
+              console.log("RGB Filter restart camera resolution:", capture.width, "x", capture.height);
+              cameraInitialized = true;
             }
+          });
+          p.capture = capture;
+          capture.hide();
+        }
+      } else {
+        p.text("Loading camera...", p.width / 2, p.height / 2);
+      }
+      return;
+    }
 
-            if (currentFilter === 'red') {
-              p.tint(255, 0, 0);
-            } else if (currentFilter === 'green') {
-              p.tint(0, 255, 0);
-            } else if (currentFilter === 'blue') {
-              p.tint(0, 0, 255);
-            } else {
-              p.noTint();
-            }
+    if (currentFilter === 'red') {
+      p.tint(255, 0, 0);
+    } else if (currentFilter === 'green') {
+      p.tint(0, 255, 0);
+    } else if (currentFilter === 'blue') {
+      p.tint(0, 0, 255);
+    } else {
+      p.noTint();
+    }
 
-            p.image(capture, 0, 0, p.width, p.height);
-          };
+    p.image(capture, 0, 0, p.width, p.height);
+  };
 
-          // ✅ FIXED windowResized
-          p.windowResized = () => {
-            console.log("RGB Filter: windowResized");
-            const canvasWidth = window.innerWidth;
-            const canvasHeight = document.documentElement.clientHeight - 50;
-            p.resizeCanvas(canvasWidth, canvasHeight);
-            
-            const buttonSpacing = 30;
-            const totalButtonsWidth = buttonSize * 3 + buttonSpacing * 2;
-            const newStartX = (p.width - totalButtonsWidth) / 2 - (buttonSize / 2);  // Shift left by radius
-            const newButtonY = p.height - buttonSize - 70;
-            
-            if (p.redButton) p.redButton.position(newStartX, newButtonY);
-            if (p.greenButton) p.greenButton.position(newStartX + buttonSize + buttonSpacing, newButtonY);
-            if (p.blueButton) p.blueButton.position(newStartX + (buttonSize + buttonSpacing) * 2, newButtonY);
-            
-            console.log(`RGB Filter buttons repositioned at x=${newStartX}`);
-          };
+  p.windowResized = () => {
+    console.log("RGB Filter: windowResized");
+    const canvasWidth = document.documentElement.clientWidth;
+    const canvasHeight = document.documentElement.clientHeight - 50 - (parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)') || 0) + parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-bottom)') || 0));
+    p.resizeCanvas(canvasWidth, canvasHeight);
+    console.log(`Canvas resized to ${canvasWidth}x${canvasHeight}`);
+    // No need to reposition buttons; Flexbox handles centering
+  };
 
-          p.remove = () => {
-            console.log("RGB Filter: Removing sketch");
-            p.noLoop();
-            if (p.capture && p.capture.elt.srcObject) {
-              try {
-                const stream = p.capture.elt.srcObject;
-                const tracks = stream.getTracks();
-                tracks.forEach(track => {
-                  track.stop();
-                  console.log("RGB Filter video track stopped:", track.label);
-                });
-                p.capture.elt.srcObject = null;
-                console.log("RGB Filter video stream cleared");
-              } catch (err) {
-                console.error("Error stopping RGB Filter video stream:", err);
-              }
-            }
-            if (p.redButton) p.redButton.remove();
-            if (p.greenButton) p.greenButton.remove();
-            if (p.blueButton) p.blueButton.remove();
-            console.log("RGB Filter buttons removed");
-            p.remove();
-          };
-        };
+  p.remove = () => {
+    console.log("RGB Filter: Removing sketch");
+    p.noLoop();
+    if (p.capture && p.capture.elt.srcObject) {
+      try {
+        const stream = p.capture.elt.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach(track => {
+          track.stop();
+          console.log("RGB Filter video track stopped:", track.label);
+        });
+        p.capture.elt.srcObject = null;
+        console.log("RGB Filter video stream cleared");
+      } catch (err) {
+        console.error("Error stopping RGB Filter video stream:", err);
+      }
+    }
+    if (p.redButton) p.redButton.remove();
+    if (p.greenButton) p.greenButton.remove();
+    if (p.blueButton) p.blueButton.remove();
+    console.log("RGB Filter buttons removed");
+    p.remove();
+  };
+};
       });
     </script>
   </body>
