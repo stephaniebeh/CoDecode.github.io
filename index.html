@@ -70,7 +70,7 @@
         font-size: 0.9rem;
         margin: 0.2rem;
         font-family: Rubik, Helvetica, sans-serif;
-        background-color: #2196F3;
+/*         background-color: #2196F3; */
         color: white;
         border: none;
         border-radius: 5px;
@@ -79,9 +79,9 @@
         flex-shrink: 0;
       }
 
-      #view-log:hover, #slit-scanner-btn:hover, #magic-lens-btn:hover, #home-btn:hover {
+/*       #view-log:hover, #slit-scanner-btn:hover, #magic-lens-btn:hover, #home-btn:hover {
         background-color: #1e87db;
-      }
+      } */
 
       #right-buttons:has(#slit-scanner-btn[style*="display: none"]) #magic-lens-btn {
         margin: 0 auto;
@@ -153,24 +153,28 @@
       }
 
       #qr-log {
-        display: none;
-        width: 90%;
-        max-width: 600px;
-        padding: 30px 20px 20px; /* Increased top padding for close button */
-        background-color: #ffffff;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        z-index: 20;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        max-height: 80vh;
-        overflow-y: auto;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        display: flex;
-        flex-direction: column;
-      }
+      display: none;
+      width: 95vw;
+      max-width: 600px;
+      max-height: 80vh;  /* ✅ FIXED: Use fixed height instead of max-height */
+      padding: 20px;
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      z-index: 20;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      overflow-y: auto;  /* ✅ FIXED: Enable vertical scrolling */
+      overflow-x: hidden; /* ✅ Keep no horizontal scrolling */
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      font-family: Rubik, sans-serif;
+      backdrop-filter: none !important;      /* ✅ PREVENT BLUR ON LOG */
+      -webkit-backdrop-filter: none !important; /* ✅ Safari fix */
+    }
 
       #qr-log h2 {
         margin: 0 0 10px;
@@ -195,13 +199,27 @@
         border-radius: 3px;
         font-size: 14px;
       }
+      
+      #qr-log-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5); 
+      z-index: 15;                           
+      backdrop-filter: blur(4px);
+    }
 
       .log-text {
-        flex: 1 1 70%; /* Allocate 70% of space to text */
-        margin-right: 8px;
-        word-break: normal; /* Prevent breaking within words */
-        overflow-wrap: break-word; /* Wrap words to next line */
-        white-space: normal; /* Allow text wrapping */
+        flex: 1;
+        min-width: 0; /* 🔥 CRITICAL: Allows flex shrinking */
+        word-break: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        line-height: 1.4;
+        color: #333;
+        margin-right: 5px
       }
 
       .log-text a {
@@ -217,16 +235,17 @@
       .reorder-btn {
         padding: 5px;
         font-size: 12px;
-        margin-right: 5px;
+        margin: 3px;
         border: none;
         border-radius: 3px;
         cursor: pointer;
-        background-color: #2196F3;
+/*         background-color: #2196F3; */
         color: white;
-        min-width: 24px; /* Reduced width for buttons */
-        height: 24px;
-        line-height: 24px;
-        text-align: center;
+        min-width: 24px; 
+        height: 24px; 
+        text-align: center;   
+        vertical-align: middle;
+        line-height: 14px;
       }
 
       .reorder-btn:disabled {
@@ -240,12 +259,14 @@
         border: none;
         border-radius: 3px;
         cursor: pointer;
-        background-color: #f44336;
+        background: #f44336;
         color: white;
-        min-width: 50px; /* Slightly reduced width */
-        height: 24px;
-        line-height: 24px;
-        text-align: center;
+        min-width: 50px;
+        height: 24px; 
+        text-align: center;   
+        vertical-align: middle; 
+
+        margin: 3px
       }
 
       #qr-log .button-container {
@@ -258,7 +279,7 @@
         padding: 8px 16px;
         font-size: 14px;
         font-family: Rubik, Helvetica, sans-serif;
-        background-color: #f44336;
+        background: #f44336;
         color: white;
         border: none;
         border-radius: 5px;
@@ -269,26 +290,47 @@
         background-color: #da190b;
       }
 
-      #close-log {
+        #close-log {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #f44336;
+        top: 0px;
+        right: 0px;
+        background: #f44336;
         color: white;
         border: none;
         border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        font-size: 16px;
-        line-height: 30px;
-        text-align: center;
+        width: 10px;     /* ✅ CHANGE THIS */
+        height: 10px ;    /* ✅ CHANGE THIS */
+        font-size: 18px;
+        font-weight: bold;
         cursor: pointer;
-        font-family: Rubik, Helvetica, sans-serif;
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 10;
+        font-family: Rubik, Helvetica, sans-serif;
       }
 
+      #lock-popup-close{
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 10px;   
+        height: 10px ;  
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        font-family: Rubik, Helvetica, sans-serif;
+      }
+      
+      
       #close-log:hover {
         background-color: #da190b;
       }
@@ -383,26 +425,26 @@
       }
 
       #lock-popup {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%;
-        max-width: 400px;
-        height: auto;
-        max-height: 80vh;
-        background-color: #ffffff;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        z-index: 100;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 15px;
-        backdrop-filter: blur(5px);
-      }
+      display: none;
+      position: fixed;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: none !important;
+      max-height: none !important;
+      transform: none !important;
+      background-color: #ffffff;
+      border: none !important;
+      border-radius: 0 !important;
+      z-index: 100;
+      box-shadow: none !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 !important;
+      backdrop-filter: none !important;
+    }
 
       #lock-canvas-container {
         width: 100%;
@@ -432,22 +474,25 @@
         background-color: #da190b;
       }
 
-      #lock-popup-close {
-        position: absolute;
-        top: 60px;
-        right: 10px;
-        background-color: #f44336;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        font-size: 16px;
-        line-height: 30px;
-        text-align: center;
-        cursor: pointer;
-        z-index: 101;
-      }
+      #lock-popup-close{
+      position: fixed !important;  /* ✅ FIXED: Use fixed instead of absolute */
+      top: 0px !important;
+      right: 0px !important;
+      background: #f44336;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px !important;     /* ✅ BIGGER & VISIBLE */
+      height: 20px !important;    /* ✅ BIGGER & VISIBLE */
+      font-size: 20px !important;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      z-index: 101 !important;
+      font-family: Rubik, Helvetica, sans-serif;
+    }
 
       #lock-popup-close:hover {
         background-color: #da190b;
@@ -465,8 +510,9 @@
         font-size: 1rem;
         font-family: Rubik, Helvetica, sans-serif;
         border-radius: 0.5rem;
-        background: linear-gradient(70deg, #FF0088 0%, #FFCC00 100%);
+        background: black;
         color: white;
+        text-align: center;
       }
 
       button#qr-result {
@@ -474,11 +520,11 @@
       }
 
       button#slit-scanner-btn {
-        background: linear-gradient(70deg, #006622 0%, #FFCC00 100%);
+        background: linear-gradient(70deg, black 0%, white 100%);
       }
 
       button#html5-qrcode-button-torch {
-        background: black;
+        background: #404040;
         color: white;
       }
 
@@ -515,18 +561,29 @@
         padding: 0.5rem 1rem;
         font-size: 0.9rem;
         font-family: Rubik, sans-serif;
-        background: linear-gradient(70deg, #FF0088 0%, #FFCC00 100%);
+        background: red;
         color: white;
         border: none;
         border-radius: 0.5rem;
         cursor: pointer;
         text-align: center;
         box-sizing: border-box;
+/*         font-weight: bold; */
       }
 
       #html5-qrcode-button-torch {
         background: black;
       }
+    
+      #magic-lens-btn{
+      background: linear-gradient(70deg, black 0%, white 100%);
+      }
+      
+      #html5-qrcode-button-camera-start{
+      background: linear-gradient(70deg, black 50%, white 100%);
+
+      }
+
 
       #html5-qrcode-button-camera-stop:hover, #html5-qrcode-button-torch:hover {
         opacity: 0.9;
@@ -554,13 +611,15 @@
     <div id="qr-result" class="qr-result"></div>
     <div id="hint-box" class="hint-box"></div>
     <div id="qr-log" class="qr-log" style="display: none;">
+
       <h2>Code Log</h2>
-      <button id="close-log">x</button>
       <ul id="log-list"></ul>
       <div class="button-container">
         <button id="clear-log">Clear Log</button>
       </div>
+              <button id="close-log">x</button>
     </div>
+    <div id="qr-log-backdrop" style="display: none;"></div>  
     <div id="image-popup" style="display: none;">
       <img id="popup-image" src="" alt="QR Image" />
       <button id="image-popup-close">x</button>
@@ -580,8 +639,6 @@
     <div id="lock-popup" style="display: none;">
       <button id="lock-popup-close">x</button>
       <div id="lock-canvas-container"></div>
-      <div class="button-container">
-        <button id="lock-cancel">Cancel</button>
       </div>
     </div>
     <script>
@@ -621,14 +678,13 @@
         const confettiPopup = document.getElementById("confetti-popup");
         const confettiImage = document.getElementById("confetti-image");
         const lockPopup = document.getElementById("lock-popup");
-        const lockCancelButton = document.getElementById("lock-cancel");
         const lockPopupClose = document.getElementById("lock-popup-close");
 
         if (!resultDiv || !hintBox || !viewLogButton || !logDiv || !logList ||
             !closeLogButton || !clearLogButton || !slitScannerButton || !magicLensButton ||
             !homeButton || !qrReader || !slitScannerPage || !rgbFilterPage || !lockPage ||
             !imagePopup || !popupImage || !imagePopupClose || !confettiPopup || !confettiImage ||
-            !lockPopup || !lockCancelButton || !lockPopupClose) {
+            !lockPopup || !lockPopupClose) {
           console.error("Error: Missing DOM elements");
           return;
         }
@@ -692,7 +748,7 @@
           },
           "22": {
             fullText: "2: 22",
-            text: "Slit",
+            text: "New Tool Unlocked!: Slit Scanner",
             linkText: "New Tool Unlocked!: Slit Scanner",
             tool: "Slit Scanner",
             hint: "Watch your step, work with your tools and friends"
@@ -745,7 +801,8 @@
           "Hint": {
             fullText: "Hint",
             text: "",
-            action: "showHint"
+            action: "showHint",
+            hint: qrLog.length === 0 ? "Where's Waldo?" : currentHint
           },
           "RR": {
             fullText: "2: RR",
@@ -916,6 +973,8 @@
           const rgbCanvas = rgbFilterPage.querySelector('canvas');
           const lockCanvas = lockPage.querySelector('canvas');
           const lockPopupCanvas = lockPopup.querySelector('canvas');
+          const lockCanvasContainer = document.getElementById('lock-canvas-container');
+
           if (slitCanvas) {
             slitCanvas.remove();
             console.log("Slit Scanner canvas removed");
@@ -931,6 +990,11 @@
           if (lockPopupCanvas) {
             lockPopupCanvas.remove();
             console.log("Lock pop-up canvas removed");
+          }
+          // Clear all content in lock-canvas-container
+          if (lockCanvasContainer) {
+            lockCanvasContainer.innerHTML = '';
+            console.log("Lock canvas container cleared");
           }
         }
 
@@ -1029,41 +1093,56 @@
           console.log("Stored QR:", fullText, "New qrLog:", qrLog);
           viewLogButton.style.display = "block";
         }
-
         function showLockPopup() {
           console.log("Attempting to show lock pop-up");
           lockPopup.style.display = "flex";
-          lockPopup.offsetHeight;
+          lockPopup.offsetHeight; // Force reflow
           console.log("Lock pop-up display set to flex, style.display:", lockPopup.style.display);
-          if (!lockInstance) {
-            console.log("Initializing lock sketch in lock-canvas-container");
-            lockInstance = new p5(lockSketch, "lock-canvas-container");
-            console.log("Lock sketch initialized");
-          } else {
-            console.log("Lock sketch already initialized");
-          }
-        }
 
-        function closeLockPopup() {
-          console.log("Closing lock pop-up");
-          lockPopup.style.display = "none";
+          // Clear previous lock instance and canvas
           if (lockInstance) {
             try {
               lockInstance.noLoop();
               lockInstance.remove();
               lockInstance = null;
-              console.log("Lock instance removed");
+              console.log("Existing lock instance removed");
             } catch (err) {
-              console.error("Error removing Lock instance:", err);
+              console.error("Error removing lock instance:", err);
             }
           }
-          cleanUpCanvases();
-          isProcessingScan = false;
-          lastScanText = null;
-          switchView("scanner");
+
+          // Clear lock-canvas-container
+          const lockCanvasContainer = document.getElementById('lock-canvas-container');
+          if (lockCanvasContainer) {
+            lockCanvasContainer.innerHTML = '';
+            console.log("Lock canvas container cleared before new sketch");
+          }
+
+          // Initialize new lock sketch
+          console.log("Initializing lock sketch in lock-canvas-container");
+          lockInstance = new p5(lockSketch, "lock-canvas-container");
+          console.log("Lock sketch initialized");
         }
 
-        lockCancelButton.addEventListener("click", closeLockPopup);
+        function closeLockPopup() {
+        console.log("Closing lock pop-up");
+        lockPopup.style.display = "none";
+        if (lockInstance) {
+          try {
+            lockInstance.noLoop();
+            lockInstance.remove();
+            lockInstance = null;
+            console.log("Lock instance removed");
+          } catch (err) {
+            console.error("Error removing Lock instance:", err);
+          }
+        }
+        cleanUpCanvases();
+        isProcessingScan = false;
+        lastScanText = null;
+        switchView("scanner");
+      }
+
         lockPopupClose.addEventListener("click", closeLockPopup);
 
         function onScanSuccess(decodedText, decodedResult) {
@@ -1085,8 +1164,10 @@
           }
 
           if (content === "Hint") {
-            console.log("Hint QR code scanned, displaying current hint:", currentHint);
-            showHintBox(currentHint);
+            // Special logic: if no QR codes scanned yet, show "Where's Waldo?"
+            const hintToShow = qrLog.length === 0 ? "Where's Waldo?" : currentHint;
+            console.log(`Hint QR code scanned, qrLog.length=${qrLog.length}, showing hint:`, hintToShow);
+            showHintBox(hintToShow);
             isProcessingScan = false;
             lastScanText = null;
             return;
@@ -1163,58 +1244,64 @@
         }
 
         function populateLog(qrLog) {
-          logList.innerHTML = "";
-          if (qrLog.length === 0) {
-            logList.innerHTML = "<li>No QR codes stored yet.</li>";
-            viewLogButton.style.display = "none";
-            return;
-          }
-
-          qrLog.slice().reverse().forEach((entry, reverseIndex) => {
-            const index = qrLog.length - 1 - reverseIndex;
-            const parsed = parseQRText(entry.text);
-            const li = document.createElement("li");
-            li.setAttribute("data-index", index);
-
-            const textSpan = document.createElement("span");
-            textSpan.className = "log-text";
-            textSpan.innerHTML = formatText(entry.text, parsed.content, true);
-
-            const upBtn = document.createElement("button");
-            upBtn.className = "reorder-btn up-btn";
-            upBtn.textContent = "↑";
-            upBtn.disabled = reverseIndex === 0;
-
-            const downBtn = document.createElement("button");
-            downBtn.className = "reorder-btn down-btn";
-            downBtn.textContent = "↓";
-            downBtn.disabled = reverseIndex === qrLog.length - 1;
-
-            const deleteBtn = document.createElement("button");
-            deleteBtn.className = "delete-btn";
-            deleteBtn.textContent = "Delete";
-
-            upBtn.addEventListener("click", () => reorderLog(index, index + 1));
-            downBtn.addEventListener("click", () => reorderLog(index, index - 1));
-            deleteBtn.addEventListener("click", () => deleteLogEntry(index));
-
-            li.appendChild(textSpan);
-            li.appendChild(upBtn);
-            li.appendChild(downBtn);
-            li.appendChild(deleteBtn);
-            logList.appendChild(li);
-          });
-
-          const imageLinks = logList.querySelectorAll(".image-link");
-          imageLinks.forEach(link => {
-            link.addEventListener("click", (e) => {
-              e.preventDefault();
-              const imageSrc = link.dataset.image;
-              console.log(`Log image link clicked: ${imageSrc}`);
-              showImagePopup(imageSrc);
-            });
-          });
+        logList.innerHTML = "";
+        if (qrLog.length === 0) {
+          logList.innerHTML = "<li style='text-align: center; padding: 20px; color: #666;'>No QR codes stored yet.</li>";
+          viewLogButton.style.display = "none";
+          return;
         }
+
+        qrLog.slice().reverse().forEach((entry, reverseIndex) => {
+          const index = qrLog.length - 1 - reverseIndex;
+          const parsed = parseQRText(entry.text);
+          const li = document.createElement("li");
+
+          const textSpan = document.createElement("span");
+          textSpan.className = "log-text";
+          textSpan.innerHTML = formatText(entry.text, parsed.content, false);
+          const buttonsDiv = document.createElement("div");
+          buttonsDiv.className = "log-buttons";
+
+          const upBtn = document.createElement("button");
+          upBtn.className = "reorder-btn up-btn";
+          upBtn.textContent = "↑";
+          upBtn.disabled = reverseIndex === 0;
+          upBtn.title = "Move up";
+
+          const downBtn = document.createElement("button");
+          downBtn.className = "reorder-btn down-btn";
+          downBtn.textContent = "↓";
+          downBtn.disabled = reverseIndex === qrLog.length - 1;
+          downBtn.title = "Move down";
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "delete-btn";
+          deleteBtn.textContent = "Delete";
+          deleteBtn.title = "Delete entry";
+
+          upBtn.addEventListener("click", () => reorderLog(index, index + 1));
+          downBtn.addEventListener("click", () => reorderLog(index, index - 1));
+          deleteBtn.addEventListener("click", () => deleteLogEntry(index));
+
+          buttonsDiv.appendChild(upBtn);
+          buttonsDiv.appendChild(downBtn);
+          buttonsDiv.appendChild(deleteBtn);
+
+          li.appendChild(textSpan);
+          li.appendChild(buttonsDiv);
+          logList.appendChild(li);
+        });
+
+        const imageLinks = logList.querySelectorAll(".image-link");
+        imageLinks.forEach(link => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const imageSrc = link.dataset.image;
+            console.log(`Log image link clicked: ${imageSrc}`);
+            showImagePopup(imageSrc);
+          });
+        });
+      }
 
         function reorderLog(fromIndex, toIndex) {
           qrLog = JSON.parse(localStorage.getItem("qrLog") || "[]");
@@ -1244,6 +1331,7 @@
             populateLog(qrLog);
             viewLogButton.style.display = "none";
             logDiv.style.display = "none";
+            document.getElementById("qr-log-backdrop").style.display = "none";  /* ✅ HIDE BACKDROP */
           }
         });
 
@@ -1252,10 +1340,12 @@
           console.log("Opening log, qrLog:", qrLog);
           populateLog(qrLog);
           logDiv.style.display = "block";
+          document.getElementById("qr-log-backdrop").style.display = "block";  /* ✅ SHOW BACKDROP */
         });
 
         closeLogButton.addEventListener("click", () => {
           logDiv.style.display = "none";
+          document.getElementById("qr-log-backdrop").style.display = "none";   /* ✅ HIDE BACKDROP */
         });
 
         // ✅ FIXED homeButton click handler
@@ -1279,151 +1369,156 @@
         console.log("QR scanner initialized");
 
         const lockSketch = (p) => {
-          let passcode = "1234";
-          let successMessage = "Access Granted!";
-          let enteredCode = "";
-          let statusMessage = "";
-          let indicatorColor = "#FFFFFF";
-          let scaleFactor;
-          let canvasWidth, canvasHeight;
-          let lastPressTime = 0;
-          const debounceDelay = 200;
+  let passcode = "1234";
+  let successMessage = "Access Granted!";
+  let enteredCode = ""; // Reset on initialization
+  let statusMessage = ""; // Reset on initialization
+  let indicatorColor = "#FFFFFF"; // Reset on initialization
+  let scaleFactor;
+  let canvasWidth, canvasHeight;
+  let lastPressTime = 0;
+  const debounceDelay = 200;
 
-          p.setup = () => {
-            console.log("Lock: setup");
-            canvasWidth = Math.min(window.innerWidth, 400);
-            canvasHeight = Math.min(window.innerHeight, 650);
-            scaleFactor = canvasWidth / 400;
-            p.createCanvas(canvasWidth, canvasHeight);
-            p.textAlign(p.CENTER);
-            p.textSize(32 * scaleFactor);
-            window.addEventListener('resize', () => {
-              p.windowResized();
-            });
-          };
+  p.setup = () => {
+    console.log("Lock: setup");
+    canvasWidth = Math.min(window.innerWidth, 400);
+    canvasHeight = Math.min(window.innerHeight, 650);
+    scaleFactor = canvasWidth / 400;
+    p.createCanvas(canvasWidth, canvasHeight);
+    p.textAlign(p.CENTER);
+    p.textSize(32 * scaleFactor);
+    // Reset state explicitly
+    enteredCode = "";
+    statusMessage = "";
+    indicatorColor = "#FFFFFF";
+    window.addEventListener('resize', () => {
+      p.windowResized();
+    });
+  };
 
-          p.draw = () => {
-            p.background(220);
-            p.fill(150);
-            p.rect(50 * scaleFactor, 40 * scaleFactor, 300 * scaleFactor, 60 * scaleFactor, 10 * scaleFactor);
-            p.fill(0);
-            p.textSize(32 * scaleFactor);
-            p.text(enteredCode, canvasWidth / 2, 80 * scaleFactor);
-            p.fill(indicatorColor);
-            p.text(statusMessage, canvasWidth / 2, 140 * scaleFactor);
-            drawButton(100 * scaleFactor, 200 * scaleFactor, "1");
-            drawButton(200 * scaleFactor, 200 * scaleFactor, "2");
-            drawButton(300 * scaleFactor, 200 * scaleFactor, "3");
-            drawButton(100 * scaleFactor, 300 * scaleFactor, "4");
-            drawButton(200 * scaleFactor, 300 * scaleFactor, "5");
-            drawButton(300 * scaleFactor, 300 * scaleFactor, "6");
-            drawButton(100 * scaleFactor, 400 * scaleFactor, "7");
-            drawButton(200 * scaleFactor, 400 * scaleFactor, "8");
-            drawButton(300 * scaleFactor, 400 * scaleFactor, "9");
-            drawButton(200 * scaleFactor, 500 * scaleFactor, "0");
-            drawButton(canvasWidth - 100 * scaleFactor, canvasHeight - 80 * scaleFactor, "Enter", true);
-            drawButton(100 * scaleFactor, canvasHeight - 80 * scaleFactor, "Clear", true);
-          };
+  p.draw = () => {
+    p.background(220);
+    p.fill(150);
+    p.rect(50 * scaleFactor, 40 * scaleFactor, 300 * scaleFactor, 60 * scaleFactor, 10 * scaleFactor);
+    p.fill(0);
+    p.textSize(32 * scaleFactor);
+    p.text(enteredCode, canvasWidth / 2, 80 * scaleFactor);
+    p.fill(indicatorColor);
+    p.text(statusMessage, canvasWidth / 2, 140 * scaleFactor);
+    drawButton(100 * scaleFactor, 200 * scaleFactor, "1");
+    drawButton(200 * scaleFactor, 200 * scaleFactor, "2");
+    drawButton(300 * scaleFactor, 200 * scaleFactor, "3");
+    drawButton(100 * scaleFactor, 300 * scaleFactor, "4");
+    drawButton(200 * scaleFactor, 300 * scaleFactor, "5");
+    drawButton(300 * scaleFactor, 300 * scaleFactor, "6");
+    drawButton(100 * scaleFactor, 400 * scaleFactor, "7");
+    drawButton(200 * scaleFactor, 400 * scaleFactor, "8");
+    drawButton(300 * scaleFactor, 400 * scaleFactor, "9");
+    drawButton(200 * scaleFactor, 500 * scaleFactor, "0");
+    drawButton(canvasWidth - 100 * scaleFactor, canvasHeight - 80 * scaleFactor, "Enter", true);
+    drawButton(100 * scaleFactor, canvasHeight - 80 * scaleFactor, "Clear", true);
+  };
 
-          function drawButton(x, y, label, isSpecial = false) {
-            p.fill(200);
-            if (isSpecial) {
-              p.circle(x, y, 80 * scaleFactor);
-            } else {
-              p.rect(x - 40 * scaleFactor, y - 40 * scaleFactor, 80 * scaleFactor, 80 * scaleFactor, 10 * scaleFactor);
-            }
-            p.fill(0);
-            p.textSize(isSpecial ? 24 * scaleFactor : 32 * scaleFactor);
-            p.text(label, x, y + 10 * scaleFactor);
+  function drawButton(x, y, label, isSpecial = false) {
+    p.fill(200);
+    if (isSpecial) {
+      p.circle(x, y, 80 * scaleFactor);
+    } else {
+      p.rect(x - 40 * scaleFactor, y - 40 * scaleFactor, 80 * scaleFactor, 80 * scaleFactor, 10 * scaleFactor);
+    }
+    p.fill(0);
+    p.textSize(isSpecial ? 24 * scaleFactor : 32 * scaleFactor);
+    p.text(label, x, y + 10 * scaleFactor);
+  }
+
+  p.mousePressed = () => {
+    const currentTime = p.millis();
+    if (currentTime - lastPressTime < debounceDelay) {
+      console.log("Debouncing: Ignoring rapid click");
+      return;
+    }
+    lastPressTime = currentTime;
+
+    checkButtonPress(100 * scaleFactor, 200 * scaleFactor, "1", false);
+    checkButtonPress(200 * scaleFactor, 200 * scaleFactor, "2", false);
+    checkButtonPress(300 * scaleFactor, 200 * scaleFactor, "3", false);
+    checkButtonPress(100 * scaleFactor, 300 * scaleFactor, "4", false);
+    checkButtonPress(200 * scaleFactor, 300 * scaleFactor, "5", false);
+    checkButtonPress(300 * scaleFactor, 300 * scaleFactor, "6", false);
+    checkButtonPress(100 * scaleFactor, 400 * scaleFactor, "7", false);
+    checkButtonPress(200 * scaleFactor, 400 * scaleFactor, "8", false);
+    checkButtonPress(300 * scaleFactor, 400 * scaleFactor, "9", false);
+    checkButtonPress(200 * scaleFactor, 500 * scaleFactor, "0", false);
+    if (p.dist(p.mouseX, p.mouseY, canvasWidth - 100 * scaleFactor, canvasHeight - 80 * scaleFactor) < 40 * scaleFactor) {
+      verifyCode();
+    }
+    if (p.dist(p.mouseX, p.mouseY, 100 * scaleFactor, canvasHeight - 80 * scaleFactor) < 40 * scaleFactor) {
+      enteredCode = "";
+      statusMessage = "";
+      indicatorColor = "#FFFFFF";
+    }
+  };
+
+  function checkButtonPress(x, y, digit, isSpecial = false) {
+    if (isSpecial) {
+      if (p.dist(p.mouseX, p.mouseY, x, y) < 40 * scaleFactor) {
+        enteredCode += digit;
+      }
+    } else {
+      if (p.mouseX > x - 40 * scaleFactor && p.mouseX < x + 40 * scaleFactor &&
+          p.mouseY > y - 40 * scaleFactor && p.mouseY < y + 40 * scaleFactor) {
+        enteredCode += digit;
+      }
+    }
+  }
+
+  function verifyCode() {
+    if (enteredCode === passcode) {
+      statusMessage = successMessage;
+      indicatorColor = "#00FF00";
+      console.log("Correct passcode entered, closing lock pop-up and showing openlock.png");
+      setTimeout(() => {
+        lockPopup.style.display = "none";
+        console.log("Lock pop-up hidden, style.display:", lockPopup.style.display);
+        if (lockInstance) {
+          try {
+            lockInstance.noLoop();
+            lockInstance.remove();
+            lockInstance = null;
+            console.log("Lock instance removed after success");
+          } catch (err) {
+            console.error("Error removing lock instance:", err);
           }
+        }
+        cleanUpCanvases();
+        showImagePopup("img/openlock.png", true);
+      }, 1000);
+    } else {
+      statusMessage = "Wrong";
+      indicatorColor = "#FF0000";
+      enteredCode = "";
+      setTimeout(() => {
+        statusMessage = "";
+        indicatorColor = "#FFFFFF";
+      }, 2000);
+    }
+  }
 
-          p.mousePressed = () => {
-            const currentTime = p.millis();
-            if (currentTime - lastPressTime < debounceDelay) {
-              console.log("Debouncing: Ignoring rapid click");
-              return;
-            }
-            lastPressTime = currentTime;
+  p.windowResized = () => {
+    console.log("Lock: windowResized");
+    canvasWidth = Math.min(window.innerWidth, 400);
+    canvasHeight = Math.min(window.innerHeight, 650);
+    scaleFactor = canvasWidth / 400;
+    p.resizeCanvas(canvasWidth, canvasHeight);
+  };
 
-            checkButtonPress(100 * scaleFactor, 200 * scaleFactor, "1", false);
-            checkButtonPress(200 * scaleFactor, 200 * scaleFactor, "2", false);
-            checkButtonPress(300 * scaleFactor, 200 * scaleFactor, "3", false);
-            checkButtonPress(100 * scaleFactor, 300 * scaleFactor, "4", false);
-            checkButtonPress(200 * scaleFactor, 300 * scaleFactor, "5", false);
-            checkButtonPress(300 * scaleFactor, 300 * scaleFactor, "6", false);
-            checkButtonPress(100 * scaleFactor, 400 * scaleFactor, "7", false);
-            checkButtonPress(200 * scaleFactor, 400 * scaleFactor, "8", false);
-            checkButtonPress(300 * scaleFactor, 400 * scaleFactor, "9", false);
-            checkButtonPress(200 * scaleFactor, 500 * scaleFactor, "0", false);
-            if (p.dist(p.mouseX, p.mouseY, canvasWidth - 100 * scaleFactor, canvasHeight - 80 * scaleFactor) < 40 * scaleFactor) {
-              verifyCode();
-            }
-            if (p.dist(p.mouseX, p.mouseY, 100 * scaleFactor, canvasHeight - 80 * scaleFactor) < 40 * scaleFactor) {
-              enteredCode = "";
-              statusMessage = "";
-              indicatorColor = "#FFFFFF";
-            }
-          };
-
-          function checkButtonPress(x, y, digit, isSpecial = false) {
-            if (isSpecial) {
-              if (p.dist(p.mouseX, p.mouseY, x, y) < 40 * scaleFactor) {
-                enteredCode += digit;
-              }
-            } else {
-              if (p.mouseX > x - 40 * scaleFactor && p.mouseX < x + 40 * scaleFactor &&
-                  p.mouseY > y - 40 * scaleFactor && p.mouseY < y + 40 * scaleFactor) {
-                enteredCode += digit;
-              }
-            }
-          }
-
-          function verifyCode() {
-            if (enteredCode === passcode) {
-              statusMessage = successMessage;
-              indicatorColor = "#00FF00";
-              console.log("Correct passcode entered, closing lock pop-up and showing openlock.png");
-              setTimeout(() => {
-                lockPopup.style.display = "none";
-                console.log("Lock pop-up hidden, style.display:", lockPopup.style.display);
-                if (lockInstance) {
-                  try {
-                    lockInstance.noLoop();
-                    lockInstance.remove();
-                    lockInstance = null;
-                    console.log("Lock instance removed after success");
-                  } catch (err) {
-                    console.error("Error removing lock instance:", err);
-                  }
-                }
-                cleanUpCanvases();
-                showImagePopup("img/openlock.png", true);
-              }, 1000);
-            } else {
-              statusMessage = "Wrong";
-              indicatorColor = "#FF0000";
-              enteredCode = "";
-              setTimeout(() => {
-                statusMessage = "";
-                indicatorColor = "#FFFFFF";
-              }, 2000);
-            }
-          }
-
-          p.windowResized = () => {
-            console.log("Lock: windowResized");
-            canvasWidth = Math.min(window.innerWidth, 400);
-            canvasHeight = Math.min(window.innerHeight, 650);
-            scaleFactor = canvasWidth / 400;
-            p.resizeCanvas(canvasWidth, canvasHeight);
-          };
-
-          p.remove = () => {
-            console.log("Lock: Removing sketch");
-            p.noLoop();
-            p.remove();
-          };
-        };
+  p.remove = () => {
+    console.log("Lock: Removing sketch");
+    p.noLoop();
+    window.removeEventListener('resize', p.windowResized);
+    p.remove();
+  };
+};
 
         const slitScannerSketch = (p) => {
           let video;
