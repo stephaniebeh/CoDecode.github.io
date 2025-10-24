@@ -106,7 +106,7 @@
         font-family: Rubik, Helvetica, sans-serif;
         background-color: #f0f0f0;
         border-radius: 5px;
-        word-break: break-all;
+        overflow-wrap: break-word;
         z-index: 10;
         position: absolute;
         bottom: 210px;
@@ -788,9 +788,9 @@
           },
           "1234": {
             fullText: "1: 1234",
-            text: "New Room Unlocked! Unfold to reveal the next room and find the vinyl",
+            text: "New Room Unlocked! Unfold ONCE to enter room and find the vinyl",
             room: true,
-            hint: "Scan the vinyl poster"
+            hint: "Scan the correct vinyl poster"
           },
           "22": {
             fullText: "2: 22",
@@ -822,7 +822,7 @@
           },
           "1234_2": {
             fullText: "2: 1234",
-            text: "New Room Unlocked! Trace the footsteps..",
+            text: "New Room Unlocked! Unfold to see the whole poster",
             room: true,
             hint: "Follow the footsteps"
           },
@@ -1228,7 +1228,7 @@
               resultDiv.innerHTML = "";
               isProcessingScan = false;
               lastScanText = null;
-            }, 3000);
+            }, 10000);
             return;
           }
 
@@ -1268,7 +1268,7 @@
               resultDiv.innerHTML = "";
               isProcessingScan = false;
               lastScanText = null;
-            }, 3000);
+            }, 10000);
             return;
           }
 
@@ -1281,7 +1281,7 @@
             resultDiv.innerHTML = "";
             isProcessingScan = false;
             lastScanText = null;
-          }, 3000);
+          }, 10000);
         }
 
         function onScanError(error) {
